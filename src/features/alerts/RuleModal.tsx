@@ -149,7 +149,7 @@ function Editor({ rule, apps, onClose }: { rule: AlertRule | null; apps: Applica
       footer={
         <div className="al-rule-modal__footer">
           <span className="text-caption-12 al-muted">
-            {readOnly ? 'VIEWER 는 읽기만 합니다 · 변경은 ADMIN' : '재배포 없이 즉시 적용 · 탐지가 10~30초 주기로 다시 읽음'}
+            {readOnly ? 'VIEWER 는 읽기만 합니다 · 변경은 ADMIN' : '재배포 없이 즉시 적용 · Detector 가 10~30초 주기로 다시 읽음'}
           </span>
           {readOnly ? (
             <Button onClick={onClose}>닫기</Button>
@@ -271,7 +271,7 @@ function Editor({ rule, apps, onClose }: { rule: AlertRule | null; apps: Applica
             <span id={`${id}-enabled`} className="text-caption-12-medium">
               enabled
             </span>
-            <span className="text-caption-12 al-muted">{form.enabled ? '켜짐' : '꺼짐 — 탐지가 건너뜁니다'}</span>
+            <span className="text-caption-12 al-muted">{form.enabled ? '켜짐' : '꺼짐 — Detector 가 건너뜁니다'}</span>
             <Switch aria-labelledby={`${id}-enabled`} checked={form.enabled} onChange={(v) => set({ enabled: v })} />
           </div>
         </fieldset>

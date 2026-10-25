@@ -63,7 +63,7 @@ export function ServiceDetail({ appId, onEdit, onDelete }: Props) {
           <dt className="text-caption-12-medium">system</dt>
           <dd className="text-body-13">
             <span className="text-mono-12-strong">{a.system}</span>
-            <span className="text-caption-12 st-muted">같은 system 끼리 샘플링 비율의 최댓값을 묶음</span>
+            <span className="text-caption-12 st-muted">같은 System 은 샘플링 비율의 최댓값 하나를 같이 씀</span>
           </dd>
         </div>
         <div>

@@ -38,7 +38,7 @@ export function InspectorPage() {
   return (
     <div className="in-wrap">
       <Tabs<InspectorTab>
-        aria-label="인스펙터"
+        aria-label="Inspector"
         value={p.tab}
         onChange={p.setTab}
         items={[

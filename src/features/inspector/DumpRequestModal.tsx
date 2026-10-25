@@ -23,7 +23,7 @@ type Step = 'idle' | 'active' | 'done' | 'failed'
 
 function failText(e: unknown): string {
   if (!(e instanceof ApiError)) return '요청이 실패했습니다.'
-  if (e.code === 'AGENT_NOT_REACHABLE') return '이 파드를 든 수집기가 없습니다 — 파드가 내려갔거나 신호가 끊겼습니다.'
+  if (e.code === 'AGENT_NOT_REACHABLE') return '이 파드를 든 Collector 가 없습니다 — 파드가 내려갔거나 신호가 끊겼습니다.'
   if (e.code === 'THREAD_DUMP_TIMEOUT') return '시간 안에 덤프가 돌아오지 않았습니다 — timeout_ms 를 늘려 다시 요청해 보세요.'
   if (e.code === 'FORBIDDEN') return '관리자(ADMIN)만 덤프를 요청할 수 있습니다.'
   return e.message
@@ -102,14 +102,14 @@ function Body({ agent, onClose, onDone }: Props & { agent: NonNullable<Props['ag
         </div>
 
         <ol className="in-steps" aria-label="진행 단계">
-          <StepItem n={1} state={s1} title="API 서버 접수" desc={sentAt ? `${formatTime(sentAt).slice(0, 8)} · 요청자 ${user?.email ?? ''}` : '요청을 누르면 시작합니다'} />
+          <StepItem n={1} state={s1} title="API server 접수" desc={sentAt ? `${formatTime(sentAt).slice(0, 8)} · 요청자 ${user?.email ?? ''}` : '요청을 누르면 시작합니다'} />
           <StepItem
             n={2}
             state={s2}
-            title="수집기 팬아웃 중"
-            desc="POST /internal/thread-dump · MONIMO_COLLECTOR_URLS 의 수집기 전부에 동시 질의 (수집기는 어느 파드가 어디 붙었는지 모른다)"
+            title="Collector 팬아웃 중"
+            desc="POST /internal/thread-dump · MONIMO_COLLECTOR_URLS 의 Collector 전부에 동시 질의 (Collector 는 어느 파드가 어디 붙었는지 모른다)"
           />
-          <StepItem n={3} state={s3} title="Extension 덤프 회수" desc="파드의 폴링을 쥔 수집기 한 대만 200 으로 덤프를 되돌린다 · 전부 503 이면 1회 재시도" />
+          <StepItem n={3} state={s3} title="Extension 덤프 회수" desc="파드의 폴링을 쥔 Collector 한 대만 200 으로 덤프를 되돌린다 · 전부 503 이면 1회 재시도" />
         </ol>
 
         <p className="text-caption-12 in-muted">200 이 한 대도 없으면 503 AGENT_NOT_REACHABLE, 한 대라도 시간 초과면 503 THREAD_DUMP_TIMEOUT</p>

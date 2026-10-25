@@ -63,9 +63,9 @@ import { ChartPreview } from './ChartPreview'
 const TONES: Tone[] = ['ok', 'warn', 'crit', 'muted', 'accent']
 
 const NAV = [
-  { key: 'server-map', label: '서버맵', icon: <IconServerMap /> },
+  { key: 'server-map', label: 'Service map', icon: <IconServerMap /> },
   { key: 'transactions', label: '트랜잭션', icon: <IconTransactions /> },
-  { key: 'inspector', label: '인스펙터', icon: <IconInspector /> },
+  { key: 'inspector', label: 'Inspector', icon: <IconInspector /> },
   { key: 'error', label: '에러', icon: <IconError /> },
   { key: 'logs', label: '로그', icon: <IconLogs /> },
   { key: 'alerts', label: '경보', icon: <IconAlerts />, count: 3 },
@@ -340,10 +340,10 @@ export function DesignSystemPreview() {
           items={NAV}
           activeKey={active}
           onSelect={setActive}
-          footer={<SidebarStatusCard title="파수꾼 · 카나리" tone="ok" value="63초 전" caption="정상 (기준 180초)" />}
+          footer={<SidebarStatusCard title="Watchdog · 카나리" tone="ok" value="63초 전" caption="정상 (기준 180초)" />}
         />
         <div style={{ flex: 1, background: 'var(--color-bg-canvas)' }}>
-          <Topbar title="서버맵" subtitle="서비스 간 호출 관계와 에러를 한눈에">
+          <Topbar title="Service map" subtitle="서비스 간 호출 관계와 에러를 한눈에">
             <span className="text-caption-12" style={{ color: 'var(--color-text-tertiary)' }}>서비스</span>
             <Select defaultValue="shop-order" aria-label="서비스">
               <option value="shop-order">shop-order</option>

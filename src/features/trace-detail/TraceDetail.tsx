@@ -99,7 +99,7 @@ export function TraceDetail({ traceId }: TraceBodyProps) {
           <span className="text-caption-12 td-muted">0 ms ~ {fmtMs(spanMs(root))} · {trace.span_count}개 스팬</span>
         </header>
         <p className="text-caption-12 td-muted td-tree-note">
-          루트 스팬은 parent_span_id 가 null · HTTP 가 아니면 http_status 도 null · 부모 없는 스팬이 2개 이상이면 '(누락된 구간)' 가짜 루트 아래로 묶인다 (1 % 샘플링 · 수집기 유실)
+          루트 스팬은 parent_span_id 가 null · HTTP 가 아니면 http_status 도 null · 부모 없는 스팬이 2개 이상이면 '(누락된 구간)' 가짜 루트 아래로 묶인다 (1 % 샘플링 · Collector 유실)
         </p>
         <SpanTimeline root={root} selectedId={selectedId} onSelect={(s) => setPicked(s.span_id)} detailId={detailId} colorIndex={colorIndex} />
       </section>

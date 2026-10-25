@@ -49,7 +49,7 @@ export function AgentAttachCard({ serviceName }: { serviceName: string }) {
           </span>
         ) : null}
         <span className="text-caption-12 st-muted">
-          Java 17 + Spring Boot 3.x · service.instance.id = 파드 이름(없으면 재시작마다 UUID) · mTLS 는 COLLECTOR_TLS_CLIENT_AUTH 켠 수집기만
+          Java 17 + Spring Boot 3.x · service.instance.id = 파드 이름(없으면 재시작마다 UUID) · mTLS 는 COLLECTOR_TLS_CLIENT_AUTH 켠 Collector 만
         </span>
       </div>
     </Card>

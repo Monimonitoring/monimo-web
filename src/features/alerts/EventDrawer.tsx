@@ -88,7 +88,7 @@ function Body({ eventId, now }: { eventId: string; now: number }) {
 
       <div className="al-links">
         <Link className="al-link text-caption-12-medium" to={href('/server-map', { serviceName: e.service_name })}>
-          서버맵에서 보기 →
+          Service map 에서 보기 →
         </Link>
         <Link className="al-link text-caption-12-medium" to={href('/alerts', undefined, { tab: 'rules', rule: e.alert_rule_uuid })}>
           규칙 보기 →
@@ -132,7 +132,7 @@ function Body({ eventId, now }: { eventId: string; now: number }) {
         )}
       </section>
 
-      <Banner tone="info">observed_value 는 탐지가 GET /internal/service-health 로 계산한 값입니다.</Banner>
+      <Banner tone="info">observed_value 는 Detector 가 GET /internal/service-health 로 계산한 값입니다.</Banner>
     </div>
   )
 }

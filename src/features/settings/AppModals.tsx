@@ -59,7 +59,7 @@ export function AppFormModal({ app, onClose, onSaved }: { app: Application | nul
           <span className="text-caption-12 st-muted">
             {app
               ? 'PATCH /applications/{uuid} · name 은 바꿀 수 없습니다'
-              : 'name 은 수집기가 받는 otel.service.name 과 같은 글자여야 합니다 · 등록 시 샘플링 설정 1줄(1 %, v1) 이 함께 생깁니다'}
+              : 'name 은 Collector 가 받는 otel.service.name 과 같은 글자여야 합니다 · 등록 시 샘플링 설정 1줄(1 %, v1) 이 함께 생깁니다'}
           </span>
         </span>
       }
@@ -101,7 +101,7 @@ export function AppFormModal({ app, onClose, onSaved }: { app: Application | nul
           <Field label="display_name" htmlFor={`${id}-display`}>
             <Input id={`${id}-display`} value={displayName} maxLength={200} placeholder="주문" onChange={(e) => setDisplayName(e.target.value)} />
           </Field>
-          <Field label="system" htmlFor={`${id}-system`} error={systemError} help="같은 system 끼리 샘플링 비율의 최댓값을 묶습니다. 쇼핑몰은 shop, 모니모 자기 감시는 monimo">
+          <Field label="system" htmlFor={`${id}-system`} error={systemError} help="같은 System 은 샘플링 비율의 최댓값 하나를 같이 씁니다. 쇼핑몰은 shop, 모니모 Self-monitoring 은 monimo">
             <Input id={`${id}-system`} className="text-mono-12" value={system} maxLength={50} placeholder={DEFAULT_SYSTEM} aria-invalid={!!systemError} onChange={(e) => setSystem(e.target.value)} />
           </Field>
           <Field label="description" htmlFor={`${id}-desc`}>

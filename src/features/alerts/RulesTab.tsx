@@ -113,7 +113,7 @@ export function RulesTab() {
           </span>
         }
         className={list.isFetching ? 'al-table is-loading' : 'al-table'}
-        summary="꺼진 규칙은 탐지가 건너뛴다. 스위치는 PATCH /alert-rules/{uuid}/enabled 를 바로 호출한다."
+        summary="꺼진 규칙은 Detector 가 건너뛴다. 스위치는 PATCH /alert-rules/{uuid}/enabled 를 바로 호출한다."
         pager={
           <CursorPager
             hasPrev={cursors.length > 1}
