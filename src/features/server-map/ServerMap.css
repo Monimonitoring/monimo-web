@@ -1,4 +1,4 @@
-/* 서버맵 (S01). 색은 토큰만. 노드 크기는 model.ts NODE_SIZE 와 같은 값 */
+/* Service map (S01). 색은 토큰만. 노드 크기는 model.ts NODE_SIZE 와 같은 값 */
 .sm-screen {
   display: flex;
   flex-direction: column;

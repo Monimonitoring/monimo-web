@@ -1,7 +1,7 @@
-// 서버맵 (api-spec 41번 GET /server-map, VIEWER+). server_map_1m 을 시간 범위로 더한 값
+// Service map (api-spec 41번 GET /server-map, VIEWER+). server_map_1m 을 시간 범위로 더한 값
 import { api } from './client'
 
-/** 불린 쪽 종류 — 우리 서비스 · DB · 바깥 API. 서버맵에서 노드 모양을 가르는 기준 */
+/** 불린 쪽 종류 — 우리 서비스 · DB · 바깥 API. Service map 에서 노드 모양을 가르는 기준 */
 export type CalleeKind = 'SERVICE' | 'DB' | 'EXTERNAL'
 
 export type ServerMapNode = {

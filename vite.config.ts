@@ -16,7 +16,7 @@ export default defineConfig({
         // 쓰는 화면(lazy)에서만 내려받고, 첫 화면 공통 파일(index)에는 들어가지 않는다.
         codeSplitting: {
           groups: [
-            // 묶음은 잡은 모듈이 쓰는 라이브러리까지 같이 끌고 간다(includeDependenciesRecursively 기본값).
+            // 그룹은 잡은 모듈이 쓰는 라이브러리까지 같이 끌고 간다(includeDependenciesRecursively 기본값).
             // React 를 먼저(priority 높게) 따로 잡아 두지 않으면 React 가 vendor-xyflow 로 딸려 가 첫 화면이 그 파일을 통째로 받는다
             { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/, priority: 10 },
             { name: 'vendor-echarts', test: /node_modules[\\/](echarts|zrender)[\\/]/ },

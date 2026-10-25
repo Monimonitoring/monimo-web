@@ -10,7 +10,7 @@ const toPct = (rate: number) => Math.round(rate * 10000) / 100
 const fmtPct = (pct: number) => pct.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
 
 /**
- * 트레이스 샘플링률 (29 · 39번). 수집기가 trace_id 해시로 이 비율만큼 골라 남긴다. 30초 캐시 뒤 반영 · 재배포 없음.
+ * 트레이스 샘플링률 (29 · 39번). Collector 가 trace_id 해시로 이 비율만큼 골라 남긴다. 30초 캐시 뒤 반영 · 재배포 없음.
  * 낙관적 잠금: 적용할 때 지금 보고 있는 판번호(expected_version)를 같이 보내고, 그 사이 누가 먼저 바꿨으면 409 로 막힌다
  */
 export function SamplingCard({ appId }: { appId: string }) {

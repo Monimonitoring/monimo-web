@@ -17,7 +17,7 @@ export type FieldProps = {
 }
 
 /**
- * Figma Field — 라벨 + 입력 + 도움말/오류 묶음. 설정 · 규칙 편집 폼의 기본 단위.
+ * Figma Field — 라벨 + 입력 + 도움말/오류 세트. 설정 · 규칙 편집 폼의 기본 단위.
  * 라벨 없이 입력만 필요하면 05-A Input 을 그대로 쓴다. 안의 입력에는 id 와 aria-invalid 를 화면이 넣는다.
  */
 export function Field({ label, htmlFor, help, error, children, className }: FieldProps) {

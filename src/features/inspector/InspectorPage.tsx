@@ -13,7 +13,7 @@ import { PodList } from './PodList'
 import { useInspectorParams, type InspectorTab } from './useInspectorParams'
 import './Inspector.css'
 
-/** 인스펙터 (S04 · S05) — 메트릭 탭(파드 목록 · 머리 · 지표 차트 · 지표 추가)과 스레드 덤프 탭. 덤프 요청은 모달 */
+/** Inspector (S04 · S05) — 메트릭 탭(파드 목록 · 머리 · 지표 차트 · 지표 추가)과 스레드 덤프 탭. 덤프 요청은 모달 */
 export function InspectorPage() {
   const serviceName = useServiceName()
   const { from, to } = useTimeWindow()

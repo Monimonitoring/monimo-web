@@ -1,4 +1,4 @@
-// 서버맵 노드 모양 3가지 — callee_kind 로 가른다. 서비스(카드) · DB(원통) · 외부(점선)
+// Service map 노드 모양 3가지 — callee_kind 로 가른다. 서비스(카드) · DB(원통) · 외부(점선)
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react'
 import { serviceColor } from '@/design-system'
 import { fmtCount, type MapNodeData } from './model'

@@ -69,7 +69,7 @@ function batchLogs(service: string, from: number, to: number): LogLine[] {
       ts: new Date(t + Math.floor(r() * 1000)).toISOString(),
       service_name: service,
       agent_key: pods[0] ?? `${service}-unknown`,
-      // 10분에 한 줄은 severity 가 없는 옛 로거라 등급이 빈 글자로 들어온다 (ADR #59)
+      // 10분에 한 줄은 severity 가 없는 옛 로거라 severity 가 빈 글자로 들어온다 (ADR #59)
       level: (t / step) % 2 === 0 ? 'INFO' : '',
       logger: `com.shop.${pkg(service)}.batch.SyncJob`,
       thread: 'scheduling-1',
@@ -94,7 +94,7 @@ export const logsHandlers = [
     const service = q.get('service_name')
     const services = service ? [service] : HOUR.nodes.map((n) => n.service_name)
     const agent = q.get('agent_key')
-    // 빈 글자('') 도 값이다 — 등급을 모르는 줄(ADR #59). 대소문자는 가리지 않는다
+    // 빈 글자('') 도 값이다 — severity 를 모르는 줄(ADR #59). 대소문자는 가리지 않는다
     const levelParam = q.get('level')
     const levels = levelParam === null ? [] : levelParam.split(',').map((l) => l.trim().toUpperCase())
     const logger = q.get('logger') ?? ''

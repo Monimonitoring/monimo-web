@@ -1,4 +1,4 @@
-// 서버맵 응답(nodes · edges) → 그래프에 그릴 노드 · 간선 값. React 와 무관한 계산만 둔다
+// Service map 응답(nodes · edges) → 그래프에 그릴 노드 · 간선 값. React 와 무관한 계산만 둔다
 import { Graph, layout } from '@dagrejs/dagre'
 import type { CalleeKind, ServerMap, ServerMapEdge } from '@/api'
 

@@ -183,7 +183,7 @@ export const threadDumpsHandlers = [
     return d ? ok(d) : fail(404, 'NOT_FOUND', '덤프를 찾을 수 없습니다.')
   }),
 
-  // 동기 요청: 수집기 팬아웃을 흉내 내 1.5초(느린 파드는 6초) 기다린 뒤 답한다
+  // 동기 요청: Collector 팬아웃을 흉내 내 1.5초(느린 파드는 6초) 기다린 뒤 답한다
   http.post(`${API_BASE}/agents/:uuid/thread-dumps`, async ({ request, params }) => {
     const denied = notAdmin(request)
     if (denied) return denied

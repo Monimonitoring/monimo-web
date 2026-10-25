@@ -1,4 +1,4 @@
-// 트레이스 (api-spec 5번 GET /traces/scatter · 9번 GET /traces/heatmap · 14번 GET /traces/{traceId} · 26번 GET /traces/transactions, VIEWER+). 트랜잭션 화면 · 서버맵 미니 스캐터가 쓴다
+// 트레이스 (api-spec 5번 GET /traces/scatter · 9번 GET /traces/heatmap · 14번 GET /traces/{traceId} · 26번 GET /traces/transactions, VIEWER+). 트랜잭션 화면 · Service map 미니 스캐터가 쓴다
 import { api, type Page } from './client'
 
 export type ScatterPoint = {

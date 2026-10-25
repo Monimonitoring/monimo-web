@@ -1,6 +1,6 @@
 # monimo-web
 
-모니모니터링 화면 (서버맵 · 트랜잭션 · 인스펙터 · 에러 · 로그 · 경보 · 설정)
+모니모니터링 화면 (Service map · 트랜잭션 · Inspector · 에러 · 로그 · 경보 · 설정)
 
 - 기술: React 19 · TypeScript · Vite · oxlint · React Router · TanStack Query · Zustand · ECharts · React Flow · MSW(가짜 응답)
 - 상태: **3단계 완료** — 화면 7개를 가짜 응답(MSW)으로 모두 만들었다. 다음은 4단계(실서버 연결 · 보안). 플랫폼 상태 화면(제안 문 3개)은 받지 않기로 해 뺐다 (#75)
@@ -64,9 +64,9 @@ VITE_API_MOCK=true npm run dev
 ```
 
 - 데모 계정 (비밀번호 모두 `monimo2026`): `admin@monimo.io` (ADMIN) · `viewer@monimo.io` (VIEWER)
-- 응답은 `src/api/mocks/<도메인>.ts` 에 있고 `handlers.ts` 가 모은다. 같은 분이면 같은 값이 나오도록 정해진 난수로 만들어, 화면끼리 숫자가 맞는다 (서버맵 빨간 점 = 트랜잭션 목록 = 트레이스 상세 예외 = 에러 표 = ERROR 로그).
+- 응답은 `src/api/mocks/<도메인>.ts` 에 있고 `handlers.ts` 가 모은다. 같은 분이면 같은 값이 나오도록 정해진 난수로 만들어, 화면끼리 숫자가 맞는다 (Service map 빨간 점 = 트랜잭션 목록 = 트레이스 상세 예외 = 에러 표 = ERROR 로그).
 - 만들기 · 수정(규칙 · 채널 · 서비스 · 샘플링률 · 덤프)은 메모리에 남고 **새로고침하면 처음으로 돌아간다**.
-- 일부러 넣어 둔 장면: 설정에서 shop-order 샘플링률을 처음 적용하면 "다른 사용자가 먼저 바꾼" 409 충돌 · 인스펙터 `shop-order-7d9f4-z9k1w` 는 덤프가 6초 걸려 timeout 5000 이면 503
+- 일부러 넣어 둔 장면: 설정에서 shop-order 샘플링률을 처음 적용하면 "다른 사용자가 먼저 바꾼" 409 충돌 · Inspector `shop-order-7d9f4-z9k1w` 는 덤프가 6초 걸려 timeout 5000 이면 503
 
 브라우저 콘솔에서 흐름을 시험할 수 있다.
 
@@ -75,7 +75,7 @@ VITE_API_MOCK=true npm run dev
 | `__monimoMock.expireAccess()` | access 토큰 만료 → 다음 요청이 401 → 자동 재발급 |
 | `__monimoMock.revokeRefresh()` | refresh 쿠키도 무효 → 재발급 실패 → 로그인 화면(세션 만료) |
 
-플랫폼 상태 화면이 부르던 제안 문 3개(`GET /platform/canary` · `/platform/services` · `/platform/canary/events`)는 백엔드가 받지 않기로 해 화면과 함께 뺐다(#75). 화면 사용자(쇼핑몰 담당자)의 관심사가 아니고, 파드 상태는 `kubectl`, 끝까지 통하는지는 파수꾼 → Slack 이 본다. 나중에 "데이터가 최신인지" 가 필요하면 수집이 끊겼을 때만 배너로 보여 준다.
+플랫폼 상태 화면이 부르던 제안 문 3개(`GET /platform/canary` · `/platform/services` · `/platform/canary/events`)는 백엔드가 받지 않기로 해 화면과 함께 뺐다(#75). 화면 사용자(쇼핑몰 담당자)의 관심사가 아니고, 파드 상태는 `kubectl`, 끝까지 통하는지는 Watchdog → Slack 이 본다. 나중에 "데이터가 최신인지" 가 필요하면 수집이 끊겼을 때만 배너로 보여 준다.
 
 ## 테스트
 
@@ -131,7 +131,7 @@ const c = chartColors()
 
 - 히트맵은 `heatmapVisualMap()` · `heatmapStep()` 으로 06 P5 농도 5단계 + 에러 색을 칠한다.
 - 새 차트 종류 · 부품(범례 · 확대 등)이 필요하면 `src/shared/charts/echarts.ts` 에 등록한다 (번들 크기 때문에 쓰는 것만).
-- ECharts 는 `vendor-echarts` 파일로 떨어져 있고, 차트를 쓰는 화면에서만 내려받는다. 서버맵 그래프(React Flow)도 `vendor-xyflow` 로 따로 떨어진다. React 는 `vendor-react` 로 떨어져 배포가 바뀌어도 브라우저 캐시를 그대로 쓴다.
+- ECharts 는 `vendor-echarts` 파일로 떨어져 있고, 차트를 쓰는 화면에서만 내려받는다. Service map 그래프(React Flow)도 `vendor-xyflow` 로 따로 떨어진다. React 는 `vendor-react` 로 떨어져 배포가 바뀌어도 브라우저 캐시를 그대로 쓴다.
 
 ## 로그인 · 권한
 
@@ -140,7 +140,7 @@ const c = chartColors()
 - `/login` 에서 로그인하면 access 토큰은 메모리에 두고, refresh 토큰은 서버가 httpOnly 쿠키(`monimo_refresh`)로 심는다 — 화면은 갖지 않는다. 모든 요청에 `Authorization: Bearer` 가 붙고, 쿠키는 재발급 · 로그아웃에만 붙는다(같은 출처여야 한다. 개발은 vite 프록시).
 - 요청이 401 이면 refresh 로 한 번 재발급하고 다시 보낸다 (동시에 여러 개여도 재발급은 1번). 재발급도 실패하면 로그인 화면으로 가며 "세션 만료" 배너가 뜬다.
 - 로그인하지 않고 화면 주소로 들어오면 `/login?next=<원래 주소>` 로 가고, 로그인 뒤 원래 주소로 돌아온다.
-- 화면에서 역할은 `useAuth()` 의 `isAdmin`, ADMIN 전용 버튼은 `<AdminOnly>` 로 감싼다. **이건 화면을 가리는 편의 기능이고, 실제로 막는 것은 API 서버다.**
+- 화면에서 역할은 `useAuth()` 의 `isAdmin`, ADMIN 전용 버튼은 `<AdminOnly>` 로 감싼다. **이건 화면을 가리는 편의 기능이고, 실제로 막는 것은 API server 다.**
 - API 응답은 명세 봉투(`{ data }` · `{ error: { code, message } }`)를 `api.get` 등이 벗겨서 돌려준다. 목록은 `api.getPage` 가 `{ items, nextCursor }` 로 준다.
 
 ## 화면 경로
@@ -150,9 +150,9 @@ const c = chartColors()
 
 | 경로 | 화면 | 주소에 두는 값 | 폴더 |
 |---|---|---|---|
-| `/server-map` (첫 화면) | 서버맵 — 서비스 그래프 · 고른 노드의 호출 수 · 응답시간 스캐터 · 상위 URL · 발화 중 경보 띠 | `service` | `features/server-map` |
+| `/server-map` (첫 화면) | Service map — 서비스 그래프 · 고른 노드의 호출 수 · 응답시간 스캐터 · 상위 URL · 발화 중 경보 띠 | `service` | `features/server-map` |
 | `/transactions` | 트랜잭션 — 스캐터/히트맵 드래그 → 목록 · URL 통계 | `tab` | `features/transactions` |
-| `/inspector` | 인스펙터 — 파드 목록 · CPU/힙/GC/스레드 차트 · 지표 추가 · **스레드 덤프 탭**(요청 모달 · 스레드 표 · 스택) | `agent` `status` `m` `tab=dumps` `dump` `dagent` `period` | `features/inspector` |
+| `/inspector` | Inspector — 파드 목록 · CPU/힙/GC/스레드 차트 · 지표 추가 · **스레드 덤프 탭**(요청 모달 · 스레드 표 · 스택) | `agent` `status` `m` `tab=dumps` `dump` `dagent` `period` | `features/inspector` |
 | `/errors` | 에러 — 시간대별 에러 막대(누르면 표가 그 칸만) · 실패 스팬 표 | `agent` `status` `exception` `at` | `features/errors` |
 | `/logs` | 로그 — 레벨 · 로거 · trace_id · 검색어 · 더 보기 | `agent` `level` `logger` `trace_id` `q` | `features/logs` |
 | `/alerts` | 경보 — 이벤트(상세 드로어 · 발송 이력) · 규칙(켜기/끄기 · 만들기/수정) · 채널(테스트 발송) | `tab` `state` `severity` `event` `enabled` `rule` `type` `channel` | `features/alerts` |
@@ -175,7 +175,7 @@ const c = chartColors()
 |---|---|
 | `VITE_API_BASE` | API 주소 앞부분 (기본 `/api/v1`) |
 | `VITE_API_MOCK` | `true` 면 개발 서버에서 가짜 응답 사용 (기본 `false`) |
-| `VITE_COLLECTOR_ENDPOINT` | 설정 화면 「에이전트 부착」 명령에 보이는 수집기 OTLP 주소 (기본 `https://collector.monimo.dev:4317`) |
+| `VITE_COLLECTOR_ENDPOINT` | 설정 화면 「에이전트 부착」 명령에 보이는 Collector OTLP 주소 (기본 `https://collector.monimo.dev:4317`) |
 
 ## 포트
 

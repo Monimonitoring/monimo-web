@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button, Card, CodeBlock, IconCopy } from '@/design-system'
 
-/** 수집기 주소. 배포마다 다르므로 .env 로 바꿀 수 있게 둔다 */
+/** Collector 주소. 배포마다 다르므로 .env 로 바꿀 수 있게 둔다 */
 const COLLECTOR = import.meta.env.VITE_COLLECTOR_ENDPOINT || 'https://collector.monimo.dev:4317'
 
 /** 에이전트 부착 — 이 서비스의 JVM 에 붙일 명령. otel.service.name 이 서비스 이름과 같아야 신호가 이 서비스로 모인다 */

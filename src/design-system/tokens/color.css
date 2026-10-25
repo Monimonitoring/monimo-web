@@ -98,7 +98,7 @@
   --color-status-warn-text: var(--amber-700);  /* warn-soft 위 글자 · 링크 (5.0:1) */
   --color-status-crit-text: var(--red-700);    /* crit-soft 위 글자 · 링크 (4.8:1) */
 
-  /* service — 서비스 팔레트 (서버맵 노드 · 트레이스 스팬 바. 채도 · 명도 동일) */
+  /* service — 서비스 팔레트 (Service map 노드 · 트레이스 스팬 바. 채도 · 명도 동일) */
   --color-service-1: var(--indigo-500); /* shop-gateway */
   --color-service-2: var(--teal-600);   /* shop-order */
   --color-service-3: var(--orange-600); /* shop-inventory */

@@ -1,7 +1,7 @@
 // 트레이스 상세 가짜 응답 (GET /traces/:traceId).
 // 트랜잭션 목록 · 스캐터에서 내보낸 trace_id 면 그 요청(서비스 · URL · 응답시간 · 실패)에 맞춰 나무를 만든다.
 // 모르는 id 는 id 를 씨앗으로 shop-order 요청을 지어낸다. `expired` 로 시작하면 보관 기간이 지난 트레이스(404 SIGNAL_EXPIRED).
-// 나무 모양: 서비스마다 SERVER → INTERNAL, 그 아래로 서버맵 간선(HOUR.edges)대로 DB · 외부 · 다른 서비스를 차례로 부른다.
+// 나무 모양: 서비스마다 SERVER → INTERNAL, 그 아래로 Service map 간선(HOUR.edges)대로 DB · 외부 · 다른 서비스를 차례로 부른다.
 // ⚠ handlers 배열에서 tracesHandlers(scatter · heatmap · transactions) 뒤에 둬야 한다 — 앞에 두면 :traceId 가 그 경로들을 가로챈다
 import { http } from 'msw'
 import { API_BASE } from '../client'

@@ -9,7 +9,7 @@ export type LogLine = {
   ts: string
   service_name: string
   agent_key: string
-  /** 닫힌 집합 TRACE~FATAL. 등급을 알 수 없으면 빈 글자 (ADR #59) */
+  /** 닫힌 집합 TRACE~FATAL. severity 를 알 수 없으면 빈 글자 (ADR #59) */
   level: LogLevel | ''
   /** 기록한 클래스 */
   logger: string
@@ -18,7 +18,7 @@ export type LogLine = {
   /** 요청과 이어지지 않은 로그(배치 등)는 빈 글자 */
   trace_id: string
   span_id: string
-  /** MDC 꼬리표 */
+  /** MDC Attribute */
   attributes: Record<string, string>
 }
 
@@ -27,7 +27,7 @@ export type LogsQuery = {
   from: string
   to: string
   agentKey?: string
-  /** 여러 개면 쉼표로 이어 보낸다. 대소문자 무관, 닫힌 집합(TRACE~FATAL) 밖이면 400, 등급 모름은 '' (ADR #59) */
+  /** 여러 개면 쉼표로 이어 보낸다. 대소문자 무관, 닫힌 집합(TRACE~FATAL) 밖이면 400, severity 모름은 '' (ADR #59) */
   levels?: (LogLevel | '')[]
   logger?: string
   traceId?: string

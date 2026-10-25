@@ -1,4 +1,4 @@
-// 서버맵 그래프 (React Flow). 배치는 dagre 로 자동, 사용자가 끌어 옮긴 위치는 「레이아웃 재정렬」 전까지 유지한다
+// Service map 그래프 (React Flow). 배치는 dagre 로 자동, 사용자가 끌어 옮긴 위치는 「레이아웃 재정렬」 전까지 유지한다
 import { useMemo, useState } from 'react'
 import { Controls, ReactFlow, type Edge, type NodeChange } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'

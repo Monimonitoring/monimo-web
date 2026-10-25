@@ -1,4 +1,4 @@
-// URL 통계 (api-spec 12번 GET /stats/urls, VIEWER+). 트랜잭션 URL 통계 탭 · 서버맵 상위 URL 이 쓴다
+// URL 통계 (api-spec 12번 GET /stats/urls, VIEWER+). 트랜잭션 URL 통계 탭 · Service map 상위 URL 이 쓴다
 import { api, type Page } from './client'
 
 export type UrlStat = {

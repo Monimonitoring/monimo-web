@@ -75,7 +75,7 @@ export function Sidebar({
 }
 
 export type SidebarStatusCardProps = {
-  /** Micro/11 제목. 예: 파수꾼 · 카나리 */
+  /** Micro/11 제목. 예: Watchdog · 카나리 */
   title: string
   tone: Tone
   /** Mono/12 값. 예: 63초 전 */

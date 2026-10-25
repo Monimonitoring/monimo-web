@@ -8,7 +8,7 @@ export type Application = {
   /** 비워 두면 null (백엔드는 빈 글자를 null 로 저장한다) */
   display_name: string | null
   description?: string | null
-  /** 속한 시스템. 수집기가 같은 값끼리 샘플링 비율의 최댓값을 묶는다(backend #205 · #206). 기본 shop */
+  /** 속한 시스템. Collector 가 같은 값끼리 샘플링 비율의 최댓값을 묶는다(backend #205 · #206). 기본 shop */
   system: string
   /** 상세(GET /applications/{uuid})에만 있다. 목록에는 없다 */
   agent_count?: number
@@ -26,7 +26,7 @@ export function getApplication(uuid: string, signal?: AbortSignal): Promise<Appl
   return api.get<Application>(`/applications/${encodeURIComponent(uuid)}`, { signal })
 }
 
-/** 등록. name 은 수집기가 받는 otel.service.name 과 같은 글자여야 하고, 겹치면(제외한 서비스 이름 포함) 409 APPLICATION_NAME_TAKEN. 설정 한 줄(샘플링 1 %, v1)이 같이 생긴다. system 을 안 보내면 shop, 빈칸이면 400 */
+/** 등록. name 은 Collector 가 받는 otel.service.name 과 같은 글자여야 하고, 겹치면(제외한 서비스 이름 포함) 409 APPLICATION_NAME_TAKEN. 설정 한 줄(샘플링 1 %, v1)이 같이 생긴다. system 을 안 보내면 shop, 빈칸이면 400 */
 export function createApplication(body: { name: string; display_name: string; description: string; system?: string }): Promise<Application> {
   return api.post<Application>('/applications', body)
 }
