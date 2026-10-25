@@ -101,7 +101,7 @@ export function AppFormModal({ app, onClose, onSaved }: { app: Application | nul
           <Field label="display_name" htmlFor={`${id}-display`}>
             <Input id={`${id}-display`} value={displayName} maxLength={200} placeholder="주문" onChange={(e) => setDisplayName(e.target.value)} />
           </Field>
-          <Field label="system" htmlFor={`${id}-system`} error={systemError} help="같은 system 끼리 샘플링 비율의 최댓값을 묶습니다. 쇼핑몰은 shop, 모니모 자기 감시는 monimo">
+          <Field label="system" htmlFor={`${id}-system`} error={systemError} help="같은 System 은 샘플링 비율의 최댓값 하나를 같이 씁니다. 쇼핑몰은 shop, 모니모 Self-monitoring 은 monimo">
             <Input id={`${id}-system`} className="text-mono-12" value={system} maxLength={50} placeholder={DEFAULT_SYSTEM} aria-invalid={!!systemError} onChange={(e) => setSystem(e.target.value)} />
           </Field>
           <Field label="description" htmlFor={`${id}-desc`}>

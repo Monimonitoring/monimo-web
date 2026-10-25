@@ -34,7 +34,7 @@ export type SidebarProps = {
  */
 export function Sidebar({
   brandName = 'MONIMO',
-  brandCaption = 'Pinpoint형 APM · 자기 감시',
+  brandCaption = 'Pinpoint형 APM · Self-monitoring',
   items,
   activeKey,
   onSelect,

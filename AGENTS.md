@@ -91,7 +91,8 @@ npm run build                    # 타입 검사 + 빌드
 화면별로 주소에 두는 값은 README 「화면 경로」 표에 있다.
 
 README 「AI 와 일한 방법」 절과 `docs/prompts/`(프롬프트 로그 : 코드와 같은 PR 에)를 두었다. 하네스 정본은 backend `docs/seungjo/harness.md` 한 곳이고 여기서는 링크만 한다.
-- 2026-10-26 문서 · 주석의 우리말 조어를 현업 이름으로 바꿨다 (backend `#240` · ADR `#73`). 코드 안 문자열(화면 문구 · Slack 경보 · 테스트 이름)은 backend `#241`
+- 2026-10-26 문서 · 주석의 우리말 조어를 현업 이름으로 바꿨다 (backend `#240` · ADR `#73`).
+- 2026-10-26 코드 안 문자열도 같은 이름으로 바꿨다 (backend `#241`) : **메뉴 · 화면 제목이 Service map · Inspector · Watchdog** 으로 바뀌었다(안내 문장은 한국어). 「Detector 가 …」 안내 · 사이드바 「Self-monitoring」 · 가짜 응답 문구를 서버와 같게
 
 ## 6. 지금 막혀 있는 것
 
