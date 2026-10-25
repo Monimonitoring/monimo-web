@@ -8,7 +8,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 echarts.use([
   ScatterChart, // 트랜잭션 스캐터 (06 P5)
   HeatmapChart, // 트랜잭션 히트맵
-  LineChart, // 인스펙터 지표 · avg 선 + min–max 밴드
+  LineChart, // Inspector 지표 · avg 선 + min–max 밴드
   BarChart, // 에러 시간대별 건수
   GridComponent,
   TooltipComponent,

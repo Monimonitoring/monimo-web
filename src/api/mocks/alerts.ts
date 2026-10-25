@@ -462,7 +462,7 @@ export const channelsHandlers = [
     return ok({ alert_channel_uuid: c.alert_channel_uuid, enabled: c.enabled, updated_at: c.updated_at })
   }),
 
-  // 테스트 발송: 알림 서비스(#50)가 대행해 보낸다. PagerDuty 의 가짜 routing_key 와 example 주소는 실패로 돌려준다
+  // 테스트 발송: Notifier(#50)가 대행해 보낸다. PagerDuty 의 가짜 routing_key 와 example 주소는 실패로 돌려준다
   http.post(`${API_BASE}/alert-channels/:uuid/test`, async ({ request, params }) => {
     const denied = notAdmin(request)
     if (denied) return denied

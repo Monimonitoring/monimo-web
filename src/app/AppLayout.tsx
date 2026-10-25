@@ -1,7 +1,7 @@
 import { lazy, type MouseEvent } from 'react'
 import { Outlet, useLocation, useMatches, useNavigate } from 'react-router'
 import { AppShell, Sidebar, Topbar } from '@/design-system'
-// 차트(echarts)까지 딸려 오지 않게 묶음 입구(@/shared) 대신 trace 만 가져온다
+// 차트(echarts)까지 딸려 오지 않게 barrel(@/shared) 대신 trace 만 가져온다
 import { TraceDrawerHost } from '@/shared/trace'
 import { useFilterHref } from '@/stores'
 import { SCREENS, type ScreenMeta } from './screens'

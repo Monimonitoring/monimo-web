@@ -17,7 +17,7 @@ export function TraceDetail({ traceId }: TraceBodyProps) {
     // 트레이스는 한 번 쌓이면 바뀌지 않는다
     staleTime: Infinity,
   })
-  // 서비스 색은 서버맵과 같게: 전체 서비스를 이름순으로 세운 순번. 목록을 받기 전에 그리면 색이 바뀌므로 기다린다
+  // 서비스 색은 Service map 과 같게: 전체 서비스를 이름순으로 세운 순번. 목록을 받기 전에 그리면 색이 바뀌므로 기다린다
   // (상단바가 이미 불러 둔 목록이라 보통 바로 온다. 실패하면 이 트레이스의 서비스만으로 정한다)
   const apps = useQuery({ queryKey: ['applications'], queryFn: listApplications, staleTime: 5 * 60_000 })
   const names = (apps.data?.map((a) => a.name) ?? trace?.services ?? []).slice().sort()

@@ -1,4 +1,4 @@
-// 인스펙터 지표 표시 규칙 — 지표 이름별 제목 · 단위 변환 · 차트 모양. React 와 무관한 계산만 둔다
+// Inspector 지표 표시 규칙 — 지표 이름별 제목 · 단위 변환 · 차트 모양. React 와 무관한 계산만 둔다
 import type { MetricPoint, MetricSeries } from '@/api'
 
 export type ChartKind =
@@ -12,9 +12,9 @@ export type ChartKind =
 export type MetricUi = {
   /** 카드 키. 제목 옆 표기 · 주소의 지표 목록과 맞춘다 */
   metric: string
-  /** 조회에 묻는 지표 이름. 없으면 metric 그대로. 힙처럼 꼬리표로 골라 그리는 카드만 다르다 */
+  /** 조회에 묻는 지표 이름. 없으면 metric 그대로. 힙처럼 Attribute 로 골라 그리는 카드만 다르다 */
   query?: string
-  /** 이 꼬리표를 전부 가진 줄만 그린다. 줄 이름에서는 이 키를 뺀다 */
+  /** 이 Attribute 를 전부 가진 줄만 그린다. 줄 이름에서는 이 키를 뺀다 */
   match?: Record<string, string>
   /** 「현재」를 줄 합으로 — 풀별 줄을 합쳐야 전체가 되는 지표 */
   total?: boolean
@@ -34,7 +34,7 @@ const MB = 1024 * 1024
 /** 시안의 기본 차트 4장 */
 export const DEFAULT_METRICS: MetricUi[] = [
   { metric: 'jvm.cpu.recent_utilization', title: 'CPU 사용률', unit: '%', scale: (v) => v * 100, kind: 'band', digits: 1 },
-  // 힙은 이름이 아니라 꼬리표로 구분된다 : jvm.memory.used 의 jvm.memory.type=heap 줄(풀마다 한 줄). {heap} 은 시안의 표기
+  // 힙은 이름이 아니라 Attribute 로 구분된다 : jvm.memory.used 의 jvm.memory.type=heap 줄(풀마다 한 줄). {heap} 은 시안의 표기
   { metric: 'jvm.memory.used{heap}', query: 'jvm.memory.used', match: { 'jvm.memory.type': 'heap' }, total: true, title: '힙 메모리', unit: 'MB', scale: (v) => v / MB, kind: 'maxline', digits: 0 },
   { metric: 'jvm.gc.duration.sum', title: 'GC 시간', unit: 'ms / 분', scale: (v) => v, kind: 'bars', limit: 80, digits: 0 },
   { metric: 'jvm.thread.count', title: '스레드 수', unit: '개', scale: (v) => v, kind: 'band', digits: 0 },

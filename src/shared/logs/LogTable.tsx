@@ -99,7 +99,7 @@ export function LogTable({ rows, q = '', hideService, hideTrace }: Props) {
                   </span>
                 </TableCell>
                 <TableCell type="badge">
-                  {/* 등급 모름('')은 색 없이 — 처럼 보여 준다 (ADR #59) */}
+                  {/* severity 모름('')은 색 없이 — 처럼 보여 준다 (ADR #59) */}
                   <Badge tone={l.level ? LEVEL_TONE[l.level] ?? 'muted' : 'muted'} className="text-mono-11">
                     {l.level || '—'}
                   </Badge>

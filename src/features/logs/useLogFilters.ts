@@ -9,7 +9,7 @@ export const EMPTY: LogFilters = { agentKey: '', levels: [], logger: '', traceId
 // trace 는 트레이스 드로어가 쓰는 이름이라, 로그의 trace_id 필터는 trace_id 로 둔다
 const KEYS = { agentKey: 'agent', levels: 'level', logger: 'logger', traceId: 'trace_id', q: 'q' } as const
 
-// 등급 모름('')은 주소에 빈 글자로 두면 쉼표 목록에서 사라져 보여, 토큰 NONE 으로 바꿔 둔다 (level=ERROR,NONE ↔ levels=['ERROR',''])
+// severity 모름('')은 주소에 빈 글자로 두면 쉼표 목록에서 사라져 보여, 토큰 NONE 으로 바꿔 둔다 (level=ERROR,NONE ↔ levels=['ERROR',''])
 const NONE_TOKEN = 'NONE'
 const toToken = (lv: LogLevel | '') => lv || NONE_TOKEN
 const fromToken = (t: string): LogLevel | '' | null => {

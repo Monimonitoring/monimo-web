@@ -1,4 +1,4 @@
-/* 인스펙터 (S04). 색은 토큰만 */
+/* Inspector (S04). 색은 토큰만 */
 .in-page { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-4); align-items: start; }
 .in-main { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
 .in-muted { color: var(--color-text-tertiary); }

@@ -1,4 +1,4 @@
-// 인스펙터 지표 (api-spec 15번 GET /metrics/series · 25번 GET /metrics/names, VIEWER+)
+// Inspector 지표 (api-spec 15번 GET /metrics/series · 25번 GET /metrics/names, VIEWER+)
 import { api } from './client'
 
 /** 서버가 시간 범위에 맞춰 고른 원본 표. 짧으면 원본, 길면 1분 · 1시간 롤업 */

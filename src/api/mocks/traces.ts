@@ -1,7 +1,7 @@
 // 트레이스 가짜 응답 (GET /traces/scatter · GET /traces/heatmap · GET /traces/transactions).
 // 요청은 "분 단위 고정 씨앗" 으로 만든다: 같은 서비스 · 같은 분이면 언제 불러도 같은 요청이 나온다.
 // 그래서 스캐터(넓은 범위)에서 드래그한 사각형으로 목록(좁은 범위)을 불러도 같은 요청을 가리킨다.
-// 1분에 평균 1.2건. 10분 묶음 중 일부는 "나쁜 구간" 이라 실패 · 느린 요청이 몰린다 (시안처럼)
+// 1분에 평균 1.2건. 10분 버킷 중 일부는 "나쁜 구간" 이라 실패 · 느린 요청이 몰린다 (시안처럼)
 import { http } from 'msw'
 import { API_BASE } from '../client'
 import type { HeatmapCell, ScatterPoint, Transaction } from '../traces'
@@ -52,7 +52,7 @@ function makeMinute(service: string, minute: number): Transaction[] {
   const node = HOUR.nodes.find((n) => n.service_name === service)
   if (!node) return []
   const r = seeded(`${service}|${minute}`)
-  // 10분 묶음 중 "나쁜 구간": 매시 30~40분은 항상, 나머지는 30% 확률
+  // 10분 버킷 중 "나쁜 구간": 매시 30~40분은 항상, 나머지는 30% 확률
   const block = Math.floor(minute / (10 * MIN))
   const bad = block % 6 === 3 || seeded(`${service}|bad|${block}`)() < 0.3
   const failRate = bad ? Math.min(0.5, (node.err_cnt / node.cnt) * 8) : 0.002

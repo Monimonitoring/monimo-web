@@ -1,4 +1,4 @@
-// 서버맵 가짜 응답 (GET /server-map). 숫자는 시안(ServerMap.dc.html) 의 1시간 값이고, 시간 범위 길이에 비례해 늘리거나 줄인다
+// Service map 가짜 응답 (GET /server-map). 숫자는 시안(ServerMap.dc.html) 의 1시간 값이고, 시간 범위 길이에 비례해 늘리거나 줄인다
 import { http } from 'msw'
 import { API_BASE } from '../client'
 import type { ServerMap } from '../serverMap'

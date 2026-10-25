@@ -1,4 +1,4 @@
-// 파드 (api-spec 47번 GET /agents, VIEWER+). 트랜잭션 파드 필터 · 인스펙터 파드 목록이 쓴다
+// 파드 (api-spec 47번 GET /agents, VIEWER+). 트랜잭션 파드 필터 · Inspector 파드 목록이 쓴다
 import { api, type Page } from './client'
 
 export type AgentStatus = 'UP' | 'DOWN' | 'UNKNOWN'

@@ -9,7 +9,7 @@ export type DumpPeriod = '24h' | '7d' | '93d'
 const PERIODS: DumpPeriod[] = ['24h', '7d', '93d']
 
 /**
- * 인스펙터 주소 쿼리 — agent(고른 파드 uuid) · status(파드 목록 상태 칩) · m(지표 추가로 붙인 차트, 쉼표로 여러 개)
+ * Inspector 주소 쿼리 — agent(고른 파드 uuid) · status(파드 목록 상태 칩) · m(지표 추가로 붙인 차트, 쉼표로 여러 개)
  * · tab(metrics · dumps) · dump(열린 덤프 uuid) · dagent(덤프 목록 파드 필터) · period(덤프 목록 기간).
  * 새로고침 · 링크 공유해도 같은 파드 · 같은 차트가 열린다. 바꿀 때 기록은 남기지 않는다(replace)
  */

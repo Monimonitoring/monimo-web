@@ -11,7 +11,7 @@ import { ServerMapGraph } from './ServerMapGraph'
 import { TopUrlCard } from './TopUrlCard'
 import './ServerMap.css'
 
-/** 서버맵 (S01) — 서비스 간 호출량 · 에러 · 평균 소요시간 그래프와 선택한 노드 요약 */
+/** Service map (S01) — 서비스 간 호출량 · 에러 · 평균 소요시간 그래프와 선택한 노드 요약 */
 export function ServerMapPage() {
   const serviceName = useServiceName()
   const { from, to } = useTimeWindow()

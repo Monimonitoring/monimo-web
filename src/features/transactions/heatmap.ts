@@ -25,7 +25,7 @@ export type GridCell = [number, number, number, number, number]
 export type Grid = { xs: number[]; stepMs: number; cells: GridCell[] }
 
 /**
- * 응답 → 격자. 가로는 [from, to) 를 step 간격으로 빈 칸 없이 채우고, 세로는 구간 하한이 드는 띠로 모은다.
+ * 응답 → 격자. 가로는 [from, to) 를 step 간격으로 빈 칸 없이 채우고, 세로는 구간 최솟값이 드는 띠로 모은다.
  * 실패가 한 건이라도 있는 칸은 에러 칸(crit)으로 칠한다 (06 P5)
  */
 export function toGrid(h: Heatmap, from: string, to: string): Grid {

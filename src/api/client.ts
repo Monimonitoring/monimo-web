@@ -3,7 +3,7 @@
 //   성공(단건) { data }  ·  성공(목록) { data: [...], page: { next_cursor, limit } }  ·  실패 { error: { code, message } }
 //   모든 응답 헤더에 X-Request-Id — 장애 문의 때 쓰도록 ApiError 에 담는다.
 // 인증: access 토큰이 있으면 Authorization: Bearer 를 붙인다. 401 이면 refresh 로 한 번 재발급하고 원 요청을 다시 보낸다.
-// refresh 는 httpOnly 쿠키라 화면이 다루지 않는다. 쿠키가 붙으려면 API 가 같은 출처여야 한다 (개발은 vite 프록시, 운영은 입구 하나).
+// refresh 는 httpOnly 쿠키라 화면이 다루지 않는다. 쿠키가 붙으려면 API 가 같은 출처여야 한다 (개발은 vite 프록시, 운영은 Ingress 하나).
 import { notifySessionExpired, tokens } from './tokens'
 
 export const API_BASE = (import.meta.env.VITE_API_BASE || '/api/v1').replace(/\/+$/, '')
@@ -60,7 +60,7 @@ function toApiError(res: Response, body: unknown): ApiError {
 
 /** 봉투를 벗기기 전 본문 전체를 돌려준다 */
 async function send(method: string, path: string, body: unknown, options: RequestOptions, retried = false): Promise<unknown> {
-  // 토큰이 API 서버가 아닌 곳으로 가지 않도록 경로는 항상 '/…' 로 시작하는 우리 쪽 상수여야 한다
+  // 토큰이 API server 가 아닌 곳으로 가지 않도록 경로는 항상 '/…' 로 시작하는 우리 쪽 상수여야 한다
   if (!path.startsWith('/') || path.startsWith('//')) throw new Error(`API 경로는 '/' 로 시작해야 합니다: ${path}`)
   const { query, headers, auth = true, ...init } = options
   const generation = tokens.generation()

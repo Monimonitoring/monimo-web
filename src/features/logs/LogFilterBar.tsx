@@ -4,7 +4,7 @@ import { Button, Card, Chip, Input, Select, type ChipTone } from '@/design-syste
 import { EMPTY, type LogFilters } from './useLogFilters'
 
 const LEVEL_TONE: Partial<Record<LogLevel, ChipTone>> = { WARN: 'warn', ERROR: 'crit', FATAL: 'crit' }
-// 등급 모름('')도 고를 수 있게 끝에 하나 더 둔다 — Chip 에 muted tone 이 없어 선택 안 한 default 모양을 그대로 쓴다
+// severity 모름('')도 고를 수 있게 끝에 하나 더 둔다 — Chip 에 muted tone 이 없어 선택 안 한 default 모양을 그대로 쓴다
 const LEVEL_CHIPS = [...LOG_LEVELS, ''] as const
 
 type Props = { filters: LogFilters; agents: Agent[]; showAgents: boolean; onApply: (f: LogFilters) => void }

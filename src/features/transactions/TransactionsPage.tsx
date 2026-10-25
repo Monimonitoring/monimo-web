@@ -37,7 +37,7 @@ function ServiceTransactions({ serviceName }: { serviceName: string }) {
   const [result, setResult] = useState<ResultFilter>('all')
   const [selection, setSelection] = useState<Selection | null>(null)
 
-  // 아래 탭은 주소(tab=urls)에 둔다 — 서버맵의 「URL 통계 전체」 링크가 바로 연다. 기록은 남기지 않는다
+  // 아래 탭은 주소(tab=urls)에 둔다 — Service map 의 「URL 통계 전체」 링크가 바로 연다. 기록은 남기지 않는다
   const [params, setParams] = useSearchParams()
   const tab: Tab = params.get('tab') === 'urls' ? 'urls' : 'requests'
   const setTab = (t: Tab) =>

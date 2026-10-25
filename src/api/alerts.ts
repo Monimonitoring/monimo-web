@@ -1,4 +1,4 @@
-// 경보 이벤트 (api-spec 16번 GET /alert-events · 45번 상세 · 24번 알림 발송 이력, VIEWER+). 경보 화면 · 서버맵 발화 중 띠가 쓴다
+// 경보 이벤트 (api-spec 16번 GET /alert-events · 45번 상세 · 24번 알림 발송 이력, VIEWER+). 경보 화면 · Service map 발화 중 띠가 쓴다
 import { api, type Page } from './client'
 
 export type AlertState = 'FIRING' | 'RESOLVED'

@@ -2,7 +2,7 @@ import { useId, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { ApiError, listLogs, type Span } from '@/api'
-// 차트(echarts)까지 딸려 오지 않게 묶음 입구(@/shared) 대신 logs 만 가져온다 — 드로어 본문 파일을 가볍게
+// 차트(echarts)까지 딸려 오지 않게 barrel(@/shared) 대신 logs 만 가져온다 — 드로어 본문 파일을 가볍게
 import { LogTable } from '@/shared/logs'
 import { toIso, useFilterHref } from '@/stores'
 import { spanMs } from './tree'

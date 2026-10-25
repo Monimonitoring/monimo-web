@@ -14,7 +14,7 @@ export type TimelineView = {
   types: { type: string; cnt: number }[]
 }
 
-/** 막대가 90개를 넘지 않게 step(초)을 고른다. 1시간이면 60초. 항상 60의 배수(수집기 집계 단위) */
+/** 막대가 90개를 넘지 않게 step(초)을 고른다. 1시간이면 60초. 항상 60의 배수(Collector 집계 단위) */
 export function errorStepSec(from: string, to: string): number {
   const sec = (Date.parse(to) - Date.parse(from)) / 1000
   return Math.max(60, Math.ceil(sec / 90 / 60) * 60)
