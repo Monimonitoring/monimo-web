@@ -21,9 +21,9 @@ type Screen = ScreenMeta & {
 }
 
 export const SCREENS: Screen[] = [
-  { path: 'server-map', title: '서버맵', subtitle: '서비스 간 호출 관계와 에러를 한눈에', icon: <IconServerMap />, load: () => import('@/features/server-map').then((m) => ({ Component: m.ServerMapPage })) },
+  { path: 'server-map', title: 'Service map', subtitle: '서비스 간 호출 관계와 에러를 한눈에', icon: <IconServerMap />, load: () => import('@/features/server-map').then((m) => ({ Component: m.ServerMapPage })) },
   { path: 'transactions', title: '트랜잭션', icon: <IconTransactions />, load: () => import('@/features/transactions').then((m) => ({ Component: m.TransactionsPage })) },
-  { path: 'inspector', title: '인스펙터', icon: <IconInspector />, load: () => import('@/features/inspector').then((m) => ({ Component: m.InspectorPage })) },
+  { path: 'inspector', title: 'Inspector', icon: <IconInspector />, load: () => import('@/features/inspector').then((m) => ({ Component: m.InspectorPage })) },
   { path: 'errors', title: '에러', icon: <IconError />, load: () => import('@/features/errors').then((m) => ({ Component: m.ErrorsPage })) },
   { path: 'logs', title: '로그', icon: <IconLogs />, load: () => import('@/features/logs').then((m) => ({ Component: m.LogsPage })) },
   { path: 'alerts', title: '경보', icon: <IconAlerts />, load: () => import('@/features/alerts').then((m) => ({ Component: m.AlertsPage })) },

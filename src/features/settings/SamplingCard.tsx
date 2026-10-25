@@ -60,7 +60,7 @@ export function SamplingCard({ appId }: { appId: string }) {
     <Card className="st-sampling">
       <header>
         <h2 className="text-section-15">트레이스 샘플링률</h2>
-        <p className="text-caption-12 st-muted">수집기가 trace_id 해시로 선별 · 정본 PG · 30초 캐시 뒤 반영 · 재배포 없음</p>
+        <p className="text-caption-12 st-muted">Collector 가 trace_id 해시로 선별 · 정본 PG · 30초 캐시 뒤 반영 · 재배포 없음</p>
       </header>
 
       {conflict ? (
@@ -94,7 +94,7 @@ export function SamplingCard({ appId }: { appId: string }) {
           <span>
             <span className="text-number-28">{fmtPct(current)} %</span> <span className="st-version text-mono-12-strong">v{c.version}</span>
           </span>
-          {appliedVersion === c.version && !changed && !save.isError ? <span className="text-caption-12 st-ok" role="status">v{c.version} 로 적용했습니다 · 30초 안에 수집기가 읽어 갑니다</span> : null}
+          {appliedVersion === c.version && !changed && !save.isError ? <span className="text-caption-12 st-ok" role="status">v{c.version} 로 적용했습니다 · 30초 안에 Collector 가 읽어 갑니다</span> : null}
         </div>
       </div>
 
@@ -128,8 +128,8 @@ export function SamplingCard({ appId }: { appId: string }) {
       <footer className="st-sampling__foot">
         <span className="text-caption-12 st-muted">
           {changed
-            ? `트레이스 100건 중 약 ${fmtPct(pct)}건을 남깁니다 (지금 ${fmtPct(current)}건) · 서비스별 비율 중 최댓값만 수집기가 쓴다 (ADR #53)`
-            : `트레이스 100건 중 약 ${fmtPct(current)}건 저장 · 서비스별 비율 중 최댓값만 수집기가 쓴다 (ADR #53)`}
+            ? `트레이스 100건 중 약 ${fmtPct(pct)}건을 남깁니다 (지금 ${fmtPct(current)}건) · 서비스별 비율 중 최댓값만 Collector 가 쓴다 (ADR #53)`
+            : `트레이스 100건 중 약 ${fmtPct(current)}건 저장 · 서비스별 비율 중 최댓값만 Collector 가 쓴다 (ADR #53)`}
         </span>
         {isAdmin ? (
           <span className="st-sampling__actions">

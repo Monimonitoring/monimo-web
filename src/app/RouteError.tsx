@@ -6,7 +6,7 @@ export function NotFound() {
   return (
     <Card title="페이지를 찾을 수 없습니다">
       <p className="text-body-13" style={{ margin: 0, color: 'var(--color-text-secondary)' }}>
-        주소를 확인하거나 <Link to="/server-map">서버맵</Link>으로 돌아가세요.
+        주소를 확인하거나 <Link to="/server-map">Service map</Link>으로 돌아가세요.
       </p>
     </Card>
   )

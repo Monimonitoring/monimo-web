@@ -7,11 +7,11 @@ import './LoginPage.css'
 
 const PIPELINE = [
   { name: '에이전트', sub: 'OTel Java' },
-  { name: '수집기', sub: 'gRPC 4317' },
+  { name: 'Collector', sub: 'gRPC 4317' },
   { name: 'Kafka', sub: 'raw' },
-  { name: '적재 처리기', sub: 'batch 2k' },
+  { name: 'Ingester', sub: 'batch 2k' },
   { name: 'ClickHouse', sub: 'spans' },
-  { name: 'API 서버', sub: '/api/v1' },
+  { name: 'API server', sub: '/api/v1' },
 ]
 
 function errorText(e: unknown): { text: string; code?: string } {
@@ -71,7 +71,7 @@ export function LoginPage() {
         </div>
         <div className="login__pipeline-block">
           <div className="login__micro text-micro-11">수집 파이프라인</div>
-          <ol className="login__pipeline" aria-label="에이전트에서 수집기, Kafka, 적재 처리기, ClickHouse를 거쳐 API 서버로 흐르는 수집 파이프라인">
+          <ol className="login__pipeline" aria-label="에이전트에서 Collector, Kafka, Ingester, ClickHouse를 거쳐 API server 로 흐르는 수집 파이프라인">
             {PIPELINE.map((step, i) => (
               <li key={step.name} className="login__step">
                 <div className={i === PIPELINE.length - 1 ? 'login__node login__node--last' : 'login__node'}>

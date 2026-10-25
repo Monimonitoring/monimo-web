@@ -167,7 +167,7 @@ describe('서비스 · 설정', () => {
   })
 })
 
-describe('서버맵 · 트랜잭션 · 트레이스', () => {
+describe('Service map · 트랜잭션 · 트레이스', () => {
   it('GET /server-map', async () => {
     const m = await getServerMap({ serviceName: null, from, to })
     expect(missing(m.nodes[0], ['service_name', 'cnt', 'err_cnt'])).toEqual([])
@@ -223,7 +223,7 @@ describe('에러 · 로그', () => {
   })
 })
 
-describe('인스펙터 · 스레드 덤프', () => {
+describe('Inspector · 스레드 덤프', () => {
   it('GET /agents → GET /agents/{uuid} · active-threads', async () => {
     const page = await listAgents({ serviceName: SERVICE })
     const a = page.items.find((x) => x.status === 'UP')!

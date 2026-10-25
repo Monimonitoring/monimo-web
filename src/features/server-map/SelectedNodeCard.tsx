@@ -52,8 +52,8 @@ export function SelectedNodeCard({ graph, selected }: { graph: MapGraph | undefi
         {!avg
           ? '들어오는 간선이 없어 평균 소요시간이 없습니다 (가장 앞에서 부르는 서비스).'
           : avg.edges.length === 1
-            ? `avg 는 간선 ${avg.edges[0].caller_service} → ${node.name} 의 avg_duration_ms(소수 1자리). 노드 err 는 5xx 만, 간선 err 는 4xx 도 센다 · 수집기 1 % 샘플이라 cnt 는 표본 수(보정 없음)`
-            : `avg 는 들어오는 간선 ${avg.edges.length}개의 avg_duration_ms(소수 1자리)를 호출 수로 가중 평균한 값입니다. 노드 err 는 5xx 만, 간선 err 는 4xx 도 센다 · 수집기 1 % 샘플이라 cnt 는 표본 수(보정 없음)`}
+            ? `avg 는 간선 ${avg.edges[0].caller_service} → ${node.name} 의 avg_duration_ms(소수 1자리). 노드 err 는 5xx 만, 간선 err 는 4xx 도 센다 · Collector 1 % 샘플이라 cnt 는 표본 수(보정 없음)`
+            : `avg 는 들어오는 간선 ${avg.edges.length}개의 avg_duration_ms(소수 1자리)를 호출 수로 가중 평균한 값입니다. 노드 err 는 5xx 만, 간선 err 는 4xx 도 센다 · Collector 1 % 샘플이라 cnt 는 표본 수(보정 없음)`}
       </p>
     </Card>
   )

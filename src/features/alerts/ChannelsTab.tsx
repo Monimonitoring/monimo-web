@@ -73,7 +73,7 @@ export function ChannelsTab() {
           ? {
               tone: 'ok',
               title: `시험 메시지 전송 완료 — ${c.name} · SUCCESS`,
-              lines: [`response: ${r.response} · ${formatTime(r.tested_at).slice(0, 8)}`, '알림 서비스 POST /internal/channels/test (#50)가 대행해 실제로 보냈습니다.'],
+              lines: [`response: ${r.response} · ${formatTime(r.tested_at).slice(0, 8)}`, 'Notifier POST /internal/channels/test (#50)가 대행해 실제로 보냈습니다.'],
             }
           : {
               tone: 'crit',

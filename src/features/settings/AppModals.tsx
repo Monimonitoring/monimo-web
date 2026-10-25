@@ -59,7 +59,7 @@ export function AppFormModal({ app, onClose, onSaved }: { app: Application | nul
           <span className="text-caption-12 st-muted">
             {app
               ? 'PATCH /applications/{uuid} · name 은 바꿀 수 없습니다'
-              : 'name 은 수집기가 받는 otel.service.name 과 같은 글자여야 합니다 · 등록 시 샘플링 설정 1줄(1 %, v1) 이 함께 생깁니다'}
+              : 'name 은 Collector 가 받는 otel.service.name 과 같은 글자여야 합니다 · 등록 시 샘플링 설정 1줄(1 %, v1) 이 함께 생깁니다'}
           </span>
         </span>
       }

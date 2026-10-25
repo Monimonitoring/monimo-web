@@ -30,8 +30,8 @@ export function ServerMapPage() {
   const [layoutNonce, setLayoutNonce] = useState(0)
 
   let state: string | null = null
-  if (isPending) state = '서버맵을 불러오는 중입니다…'
-  else if (error && !graph) state = `서버맵을 불러오지 못했습니다. ${error instanceof ApiError ? `(${error.code})` : ''}`
+  if (isPending) state = 'Service map 을 불러오는 중입니다…'
+  else if (error && !graph) state = `Service map 을 불러오지 못했습니다. ${error instanceof ApiError ? `(${error.code})` : ''}`
   else if (graph && graph.nodes.length === 0) state = '이 시간 범위에 기록된 호출이 없습니다.'
 
   // 스캐터 · 상위 URL 은 서비스 노드에서만 나온다 (DB · 외부는 스팬을 보내지 않는다)

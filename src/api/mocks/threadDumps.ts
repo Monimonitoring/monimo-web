@@ -196,7 +196,7 @@ export const threadDumpsHandlers = [
     await wait(Math.min(takes, timeout), request.signal)
     // 화면이 창을 닫아 요청을 끊었으면 덤프를 만들지 않는다 (취소한 요청이 목록에 쌓이지 않게)
     if (request.signal.aborted) return new Response(null, { status: 499 })
-    if (a.status !== 'UP') return fail(503, 'AGENT_NOT_REACHABLE', '이 파드를 든 수집기가 없습니다. 파드가 내려갔거나 신호가 끊겼습니다.')
+    if (a.status !== 'UP') return fail(503, 'AGENT_NOT_REACHABLE', '이 파드를 든 Collector 가 없습니다. 파드가 내려갔거나 신호가 끊겼습니다.')
     if (takes > timeout) return fail(503, 'THREAD_DUMP_TIMEOUT', `${timeout}ms 안에 덤프가 돌아오지 않았습니다.`)
     const n = all().length + 1
     const r = seeded(`${a.agent_key}|${n}`)
