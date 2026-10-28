@@ -17,6 +17,8 @@
 .sm-legend { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); color: var(--color-text-tertiary); }
 .sm-legend__item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .sm-legend__ext { width: 14px; height: 10px; border: 1.4px dashed currentColor; border-radius: 3px; box-sizing: border-box; }
+/* 범례의 비동기 표시. 노드와 같은 육각형이되 범례 크기로 (clip-path 라 테두리 대신 채운다) */
+.sm-legend__msg { width: 16px; height: 11px; background: currentColor; clip-path: polygon(14% 0, 86% 0, 100% 50%, 86% 100%, 14% 100%, 0 50%); }
 
 /* 그래프 캔버스 */
 .sm-canvas { position: relative; flex: 1; min-height: 0; }
@@ -68,13 +70,23 @@
   fill: var(--color-bg-surface); stroke: var(--color-border-strong); stroke-width: 1.4; vector-effect: non-scaling-stroke;
 }
 .sm-node--db.sm-node--crit .sm-node__cylinder :is(path, ellipse) { stroke: var(--color-status-crit); }
+/* 메시징(비동기): 육각형 (테두리는 SVG 로, DB 원통과 같은 이유) */
+.sm-node--messaging { position: relative; width: 176px; height: 72px; padding: 0 26px; align-items: center; background: none; }
+.sm-node--messaging > :not(svg) { position: relative; }
+.sm-node__hex { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.sm-node__hex path {
+  fill: var(--color-bg-surface); stroke: var(--color-border-strong); stroke-width: 1.4;
+  stroke-dasharray: 10 4; vector-effect: non-scaling-stroke;
+}
+.sm-node--messaging.sm-node--crit .sm-node__hex path { stroke: var(--color-status-crit); }
 
 /* 선택됨: accent 테두리 + 옅은 바깥 고리 */
-.sm-node.is-selected:not(.sm-node--db) {
+.sm-node.is-selected:not(.sm-node--db, .sm-node--messaging) {
   border: 2px solid var(--color-accent-default);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent-default) 22%, transparent);
 }
 .sm-node--db.is-selected .sm-node__cylinder :is(path, ellipse) { stroke: var(--color-accent-default); stroke-width: 2; }
+.sm-node--messaging.is-selected .sm-node__hex path { stroke: var(--color-accent-default); stroke-width: 2; }
 .react-flow__node:focus-visible { outline: none; }
 .react-flow__node:focus-visible > .sm-node { outline: 2px solid var(--color-accent-default); outline-offset: 3px; }
 

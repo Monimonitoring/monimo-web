@@ -62,6 +62,7 @@ export function ServerMapPage() {
               <span className="sm-legend__item"><StatusDot tone="crit" />에러</span>
               <span className="sm-legend__item"><IconDbCylinder size={14} />DB</span>
               <span className="sm-legend__item"><span className="sm-legend__ext" aria-hidden />외부</span>
+              <span className="sm-legend__item"><span className="sm-legend__msg" aria-hidden />비동기</span>
             </div>
           </div>
           <div className={`sm-canvas${isFetching && !isPending ? ' is-loading' : ''}`} aria-busy={isFetching}>
