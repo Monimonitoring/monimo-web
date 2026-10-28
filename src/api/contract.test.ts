@@ -161,6 +161,12 @@ describe('서버맵 · 트랜잭션 · 트레이스', () => {
     const m = await getServerMap({ serviceName: null, from, to })
     expect(missing(m.nodes[0], ['service_name', 'cnt', 'err_cnt'])).toEqual([])
     expect(missing(m.edges[0], ['caller_service', 'callee_service', 'callee_kind', 'cnt', 'err_cnt', 'avg_duration_ms'])).toEqual([])
+    // callee_kind 는 명세의 네 값만 온다 (SERVICE · DB · EXTERNAL · MESSAGING)
+    expect([...new Set(m.edges.map((e) => e.callee_kind))].filter((k) => !['SERVICE', 'DB', 'EXTERNAL', 'MESSAGING'].includes(k))).toEqual([])
+    // 비동기는 간선이 큐를 거쳐 둘로 쪼개진다 : 큐로 들어가는 간선과 큐에서 나가는 간선이 같이 온다
+    const queues = m.edges.filter((e) => e.callee_kind === 'MESSAGING')
+    expect(queues.some((e) => e.callee_service === 'kafka')).toBe(true)
+    expect(queues.some((e) => e.caller_service === 'kafka')).toBe(true)
   })
 
   it('시간 범위가 거꾸로면 422 UNPROCESSABLE', async () => {

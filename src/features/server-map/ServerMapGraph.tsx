@@ -1,12 +1,21 @@
 // 서버맵 그래프 (React Flow). 배치는 dagre 로 자동, 사용자가 끌어 옮긴 위치는 「레이아웃 재정렬」 전까지 유지한다
 import { useMemo, useState } from 'react'
 import { Controls, ReactFlow, type Edge, type NodeChange } from '@xyflow/react'
+import type { CalleeKind } from '@/api'
 import '@xyflow/react/dist/style.css'
 import { autoLayout, edgeId, fmtCompact, fmtCount, health, type MapGraph } from './model'
-import { DbNode, ExternalNode, ServiceNode, type MapNode } from './nodes'
+import { DbNode, ExternalNode, MessagingNode, ServiceNode, type MapNode } from './nodes'
 
 /** React Flow 에 넘기는 노드 종류 표. 컴포넌트 밖 상수여야 매 렌더마다 노드를 다시 만들지 않는다 */
-const nodeTypes = { SERVICE: ServiceNode, DB: DbNode, EXTERNAL: ExternalNode }
+const nodeTypes = { SERVICE: ServiceNode, DB: DbNode, EXTERNAL: ExternalNode, MESSAGING: MessagingNode }
+
+/** 간선 선 모양. 같은 종류 안에서는 굵기 · 색이 에러율을 말한다 */
+const EDGE_DASH: Record<CalleeKind, string | undefined> = {
+  SERVICE: undefined,
+  DB: undefined,
+  EXTERNAL: '5 3',
+  MESSAGING: '10 4',
+}
 
 type Point = { x: number; y: number }
 type Size = { width: number; height: number }
@@ -63,7 +72,8 @@ export function ServerMapGraph({ graph, selected, onSelect, query, layoutNonce }
           style: {
             stroke: color,
             strokeWidth: h === 'crit' ? 2 : 1.6,
-            strokeDasharray: e.callee_kind === 'EXTERNAL' ? '5 3' : undefined,
+            // 외부는 촘촘한 점선, 비동기는 긴 점선. 동기 호출만 실선이다 (backend `#259`)
+            strokeDasharray: EDGE_DASH[e.callee_kind],
             opacity: faded ? 0.25 : 1,
           },
           label: [fmtCompact(e.cnt), h !== 'ok' && `err ${fmtCount(e.err_cnt)}`, `${Math.round(e.avg_duration_ms)}ms`].filter(Boolean).join(' · '),
