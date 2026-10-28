@@ -18,6 +18,11 @@ export const HOUR: ServerMap = {
     { caller_service: 'shop-order', callee_service: 'shop-inventory', callee_kind: 'SERVICE', cnt: 9200, err_cnt: 14, avg_duration_ms: 63 },
     { caller_service: 'shop-order', callee_service: 'orders-db', callee_kind: 'DB', cnt: 24860, err_cnt: 5, avg_duration_ms: 11 },
     { caller_service: 'shop-payment', callee_service: 'pg-gateway.example.com', callee_kind: 'EXTERNAL', cnt: 9450, err_cnt: 388, avg_duration_ms: 341 },
+    // 비동기(backend `#259`). 주문이 끝나면 큐에 넣고 재고가 읽어 뒤처리를 한다. 간선이 큐를 거쳐 둘로 쪼개진다 :
+    // 보낸 쪽 스팬은 받는 쪽을 모르고 읽은 쪽 스팬은 보낸 쪽을 몰라서 어느 쪽에도 order → inventory 가 안 적혀 있다.
+    // 읽은 건수가 보낸 건수보다 조금 적은 것은 1분 창 경계에서 갈리기 때문이다 (늦게 읽힌 것은 다음 분에 들어간다)
+    { caller_service: 'shop-order', callee_service: 'kafka', callee_kind: 'MESSAGING', cnt: 9080, err_cnt: 0, avg_duration_ms: 4 },
+    { caller_service: 'kafka', callee_service: 'shop-inventory', callee_kind: 'MESSAGING', cnt: 9064, err_cnt: 3, avg_duration_ms: 18 },
   ],
 }
 

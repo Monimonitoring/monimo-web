@@ -76,8 +76,10 @@ function serviceTree(ctx: Ctx, service: string, spanName: string, startMs: numbe
   adopt(server, inner)
 
   // 부르는 순서: DB 조회 → 빠른 서비스 → 느린 서비스(외부)
-  const kindOrder = { DB: 0, SERVICE: 1, EXTERNAL: 2 } as const
-  const calls = (depth < 3 ? HOUR.edges.filter((e) => e.caller_service === service) : []).sort(
+  const kindOrder = { DB: 0, SERVICE: 1, EXTERNAL: 2, MESSAGING: 3 } as const
+  // 비동기 간선은 트레이스 나무에 안 넣는다. 보낸 쪽과 읽은 쪽이 다른 트레이스라 한 나무로 못 그린다.
+  // 트레이스 상세의 비동기 표시는 backend `#259` 범위 밖(후속)이다
+  const calls = (depth < 3 ? HOUR.edges.filter((e) => e.caller_service === service && e.callee_kind !== 'MESSAGING') : []).sort(
     (a, b) => kindOrder[a.callee_kind] - kindOrder[b.callee_kind] || a.avg_duration_ms - b.avg_duration_ms,
   )
   // 실패는 가장 느린 서비스 · 외부 호출에서 난 것으로

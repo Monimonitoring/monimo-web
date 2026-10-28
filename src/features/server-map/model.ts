@@ -35,6 +35,7 @@ export const NODE_SIZE: Record<CalleeKind, { width: number; height: number }> = 
   SERVICE: { width: 168, height: 64 },
   DB: { width: 184, height: 80 },
   EXTERNAL: { width: 208, height: 58 },
+  MESSAGING: { width: 176, height: 72 },
 }
 
 export type MapGraph = { nodes: MapNodeData[]; edges: ServerMapEdge[]; key: string }
@@ -55,7 +56,9 @@ export function toGraph(map: ServerMap): MapGraph {
   }
   for (const n of map.nodes) add(n.service_name, 'SERVICE', n.cnt, n.err_cnt)
   for (const e of edges) {
-    if (!byName.has(e.caller_service)) add(e.caller_service, 'SERVICE', 0, 0)
+    // 부른 쪽이 응답의 nodes 에 없으면 간선에서 만든다. 비동기는 부른 쪽이 큐(kafka)라 SERVICE 로 두면
+    // 서비스 카드로 그려진다 (backend `#259` : 큐 → 읽은 서비스 간선의 caller 가 큐 이름이다)
+    if (!byName.has(e.caller_service)) add(e.caller_service, e.callee_kind === 'MESSAGING' ? 'MESSAGING' : 'SERVICE', 0, 0)
     // 서비스 노드는 서버가 준 합계를 쓴다. 응답에 없는 서비스 · DB · 외부만 간선에서 더한다
     const known = map.nodes.some((n) => n.service_name === e.callee_service)
     if (!known) add(e.callee_service, e.callee_kind, e.cnt, e.err_cnt)
