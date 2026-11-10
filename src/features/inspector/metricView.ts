@@ -37,7 +37,8 @@ export const DEFAULT_METRICS: MetricUi[] = [
   // 힙은 이름이 아니라 Attribute 로 구분된다 : jvm.memory.used 의 jvm.memory.type=heap 줄(풀마다 한 줄). {heap} 은 시안의 표기
   { metric: 'jvm.memory.used{heap}', query: 'jvm.memory.used', match: { 'jvm.memory.type': 'heap' }, total: true, title: '힙 메모리', unit: 'MB', scale: (v) => v / MB, kind: 'maxline', digits: 0 },
   { metric: 'jvm.gc.duration.sum', title: 'GC 시간', unit: 'ms / 분', scale: (v) => v, kind: 'bars', limit: 80, digits: 0 },
-  { metric: 'jvm.thread.count', title: '스레드 수', unit: '개', scale: (v) => v, kind: 'band', digits: 0 },
+  // 스레드 수는 데몬 여부 × 상태마다 줄이 따로 와서 합쳐야 전체 개수다
+  { metric: 'jvm.thread.count', total: true, title: '스레드 수', unit: '개', scale: (v) => v, kind: 'band', digits: 0 },
 ]
 
 /** 지표 추가로 붙인 차트 — 이름으로 단위를 짐작한다 (OTel 이름 규칙: utilization 은 0~1 비율, memory 는 바이트, duration 은 ms) */
