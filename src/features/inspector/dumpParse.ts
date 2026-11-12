@@ -106,6 +106,34 @@ export function parseDeadlocks(text: string): string[][] {
   return out
 }
 
+/**
+ * 원인일 가능성 순 — 등급을 먼저 매기고 같은 등급 안에서 보조 기준, 어떤 기준이든 동점이면 이름순.
+ * 1 데드락 절의 스레드 · 2 자기가 쥔 락을 남이 기다리는 스레드(막은 쪽, 기다리는 수 많은 순) · 3 BLOCKED(막힌 쪽,
+ * 같은 락을 기다리는 수 → 스택 깊이) · 4 RUNNABLE(CPU 시간) · 6 WAITING · TIMED_WAITING · 그 외.
+ * 모니터(waiting to lock)만 센다 — park · wait 는 기다리는 대상을 쥔 스레드가 덤프에 없다
+ */
+export function sortByCause(threads: DumpThread[], deadlocks: string[][]): DumpThread[] {
+  const dead = new Map<string, number>()
+  deadlocks.flat().forEach((name, i) => dead.has(name) || dead.set(name, i))
+  const waiters = new Map<string, number>()
+  for (const t of threads) if (t.waiting?.kind === 'lock') waiters.set(t.waiting.addr, (waiters.get(t.waiting.addr) ?? 0) + 1)
+
+  const key = (t: DumpThread): [grade: number, major: number, minor: number] => {
+    if (dead.has(t.name)) return [1, dead.get(t.name)!, 0]
+    const blocking = t.locked.reduce((n, l) => n + (waiters.get(l.addr) ?? 0), 0)
+    if (blocking > 0) return [2, -blocking, 0]
+    if (t.state === 'BLOCKED') return [3, -(t.waiting?.kind === 'lock' ? (waiters.get(t.waiting.addr) ?? 0) : 0), -t.depth]
+    if (t.state === 'RUNNABLE') return [4, -(t.cpuMs ?? -1), 0]
+    return [6, 0, 0]
+  }
+  const keys = new Map(threads.map((t) => [t.id, key(t)]))
+  return [...threads].sort((a, b) => {
+    const [ga, ma, na] = keys.get(a.id)!
+    const [gb, mb, nb] = keys.get(b.id)!
+    return ga - gb || ma - mb || na - nb || a.name.localeCompare(b.name) || a.id - b.id
+  })
+}
+
 /** 락 주소 → 그 락을 쥔 스레드 이름 */
 export function lockOwners(threads: DumpThread[]): Map<string, string> {
   const m = new Map<string, string>()

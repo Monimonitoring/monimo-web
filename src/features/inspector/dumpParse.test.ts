@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blockedSummary, lockOwners, parseDeadlocks, parseDump, stateCounts } from './dumpParse'
+import { blockedSummary, lockOwners, parseDeadlocks, parseDump, sortByCause, stateCounts } from './dumpParse'
 
 // jstack 이 실제로 찍는 모양을 줄였다. 스레드 사이는 빈 줄, 프레임은 탭으로 들여쓴다. 첫 스레드만 cpu= 가 있다 (JDK 11+ · agent-extension)
 const DUMP = [
@@ -149,5 +149,102 @@ describe('데드락 절', () => {
     expect(threads.map((t) => t.name)).toEqual(['dead-1', 'dead-2'])
     expect(threads[0].depth).toBe(1)
     expect(lockOwners(threads).get('0x000000008bb19af0')).toBe('dead-2')
+  })
+})
+
+// 원인 가능성 순 — 일부러 원문 순서를 답과 반대로 섞었다
+const CAUSE = [
+  '"idle-b" #1 prio=5 cpu=1.00ms waiting on condition',
+  '   java.lang.Thread.State: WAITING (parking)',
+  '\tat jdk.internal.misc.Unsafe.park(Native Method)',
+  '\t- parking to wait for <0x0000000000000a01> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)',
+  '',
+  '"idle-a" #2 prio=5 cpu=900.00ms waiting on condition',
+  '   java.lang.Thread.State: TIMED_WAITING (sleeping)',
+  '\tat java.lang.Thread.sleep(Native Method)',
+  '',
+  '"busy-low" #3 prio=5 cpu=5.00ms runnable',
+  '   java.lang.Thread.State: RUNNABLE',
+  '\tat com.shop.Work.spin(Work.java:1)',
+  '',
+  '"busy-high" #4 prio=5 cpu=50.00ms runnable',
+  '   java.lang.Thread.State: RUNNABLE',
+  '\tat com.shop.Work.spin(Work.java:1)',
+  '',
+  '"blocked-y" #5 prio=5 cpu=1.00ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat com.shop.Y.run(Y.java:1)',
+  '\t- waiting to lock <0x0000000000000bbb> (a com.shop.Y)',
+  '\tat java.lang.Thread.run(Thread.java:1)',
+  '',
+  '"blocked-x2" #6 prio=5 cpu=1.00ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat com.shop.X.run(X.java:1)',
+  '\t- waiting to lock <0x0000000000000aaa> (a com.shop.X)',
+  '',
+  '"blocked-x1" #7 prio=5 cpu=1.00ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat com.shop.X.run(X.java:1)',
+  '\t- waiting to lock <0x0000000000000aaa> (a com.shop.X)',
+  '',
+  '"holder-x" #8 prio=5 cpu=2.00ms runnable',
+  '   java.lang.Thread.State: RUNNABLE',
+  '\tat java.net.SocketInputStream.read(Native Method)',
+  '\tat com.shop.X.slowIo(X.java:9)',
+  '\t- locked <0x0000000000000aaa> (a com.shop.X)',
+  '',
+  '"dead-2" #9 prio=5 cpu=1.00ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat com.shop.D.run(D.java:2)',
+  '\t- waiting to lock <0x0000000000000d01> (a java.lang.Object)',
+  '\t- locked <0x0000000000000d02> (a java.lang.Object)',
+  '',
+  '"dead-1" #10 prio=5 cpu=1.00ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat com.shop.D.run(D.java:1)',
+  '\t- waiting to lock <0x0000000000000d02> (a java.lang.Object)',
+  '\t- locked <0x0000000000000d01> (a java.lang.Object)',
+  '',
+  'Found one Java-level deadlock:',
+  '=============================',
+  '"dead-1":',
+  '  waiting to lock <0x0000000000000d02> (a java.lang.Object),',
+  '  which is held by "dead-2"',
+  '"dead-2":',
+  '  waiting to lock <0x0000000000000d01> (a java.lang.Object),',
+  '  which is held by "dead-1"',
+  '',
+  'Java stack information for the threads listed above:',
+  '===================================================',
+  '"dead-1":',
+  '\tat com.shop.D.run(D.java:1)',
+  '"dead-2":',
+  '\tat com.shop.D.run(D.java:2)',
+  '',
+  'Found 1 deadlock.',
+  '',
+].join('\n')
+
+describe('원인 가능성 순', () => {
+  const threads = parseDump(CAUSE)
+  const order = sortByCause(threads, parseDeadlocks(CAUSE)).map((t) => t.name)
+
+  it('데드락 → 락을 쥔 쪽 → BLOCKED → RUNNABLE → 대기 순이고, 같은 등급은 보조 기준 · 이름순', () => {
+    expect(order).toEqual([
+      'dead-1', // 1 데드락 절 순서 (원문에서는 dead-2 가 먼저)
+      'dead-2',
+      'holder-x', // 2 자기가 쥔 aaa 를 둘이 기다린다 — 상태는 RUNNABLE 이지만 데드락 다음
+      'blocked-x1', // 3 같은 락(aaa) 을 기다리는 수 2 → 깊이 같으니 이름순
+      'blocked-x2',
+      'blocked-y', // 3 bbb 는 하나만 기다린다
+      'busy-high', // 4 CPU 50 > 5
+      'busy-low',
+      'idle-a', // 6 이름순 — cpu 900 이어도 대기 스레드는 아래
+      'idle-b',
+    ])
+  })
+
+  it('원문을 바꾸지 않고 새 배열을 준다', () => {
+    expect(threads.map((t) => t.name)[0]).toBe('idle-b')
   })
 })
