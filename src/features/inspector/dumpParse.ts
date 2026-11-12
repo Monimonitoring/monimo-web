@@ -107,12 +107,12 @@ export function parseDeadlocks(text: string): string[][] {
 }
 
 /**
- * 원인일 가능성 순 — 등급을 먼저 매기고 같은 등급 안에서 보조 기준, 어떤 기준이든 동점이면 이름순.
+ * 문제 순 — 등급을 먼저 매기고 같은 등급 안에서 보조 기준, 어떤 기준이든 동점이면 이름순.
  * 1 데드락 절의 스레드 · 2 자기가 쥔 락을 남이 기다리는 스레드(막은 쪽, 기다리는 수 많은 순) · 3 BLOCKED(막힌 쪽,
  * 같은 락을 기다리는 수 → 스택 깊이) · 4 RUNNABLE(CPU 시간) · 6 WAITING · TIMED_WAITING · 그 외.
  * 모니터(waiting to lock)만 센다 — park · wait 는 기다리는 대상을 쥔 스레드가 덤프에 없다
  */
-export function sortByCause(threads: DumpThread[], deadlocks: string[][]): DumpThread[] {
+export function sortByTrouble(threads: DumpThread[], deadlocks: string[][]): DumpThread[] {
   const dead = new Map<string, number>()
   deadlocks.flat().forEach((name, i) => dead.has(name) || dead.set(name, i))
   const waiters = new Map<string, number>()

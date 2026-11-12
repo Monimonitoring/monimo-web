@@ -23,7 +23,7 @@ import {
   type Tone,
 } from '@/design-system'
 import { useServiceName } from '@/stores'
-import { blockedSummary, lockOwners, parseDeadlocks, parseDump, sortByCause, stateCounts, THREAD_STATES, type DumpThread, type ThreadState } from './dumpParse'
+import { blockedSummary, lockOwners, parseDeadlocks, parseDump, sortByTrouble, stateCounts, THREAD_STATES, type DumpThread, type ThreadState } from './dumpParse'
 import type { DumpPeriod } from './useInspectorParams'
 
 // 93d 는 보관 기간(TTL) 그대로라 기간 필터 없이 전체를 받는다 — backend 범위 상한이 7일(422 TIME_RANGE_TOO_WIDE)
@@ -245,14 +245,14 @@ function Threads({ dump }: { dump: ThreadDump }) {
   const [needle, setNeedle] = useState('')
   const [state, setState] = useState<ThreadState | ''>('')
   const [blockedOnly, setBlockedOnly] = useState(false)
-  const [sort, setSort] = useState<'cause' | 'dump' | 'cpu'>('cause')
-  // 처음에는 원인일 가능성이 가장 높은 스레드(데드락 → 락을 쥔 쪽 → BLOCKED → …)를 연다
-  const [picked, setPicked] = useState<number | null>(() => sortByCause(threads, deadlocks)[0]?.id ?? null)
+  const [sort, setSort] = useState<'trouble' | 'dump' | 'cpu'>('trouble')
+  // 처음에는 문제가 가장 큰 스레드(데드락 → 락을 쥔 쪽 → BLOCKED → …)를 연다
+  const [picked, setPicked] = useState<number | null>(() => sortByTrouble(threads, deadlocks)[0]?.id ?? null)
 
   const n = needle.trim().toLowerCase()
   const filtered = threads.filter((t) => (!n || t.name.toLowerCase().includes(n)) && (!state || t.state === state) && (!blockedOnly || t.state === 'BLOCKED'))
   // cpu= 가 없는 스레드(옛 모양)는 맨 뒤로
-  const rows = sort === 'cause' ? sortByCause(filtered, deadlocks) : sort === 'cpu' ? [...filtered].sort((a, b) => (b.cpuMs ?? -1) - (a.cpuMs ?? -1)) : filtered
+  const rows = sort === 'trouble' ? sortByTrouble(filtered, deadlocks) : sort === 'cpu' ? [...filtered].sort((a, b) => (b.cpuMs ?? -1) - (a.cpuMs ?? -1)) : filtered
   const current = threads.find((t) => t.id === picked) ?? null
 
   return (
@@ -297,8 +297,8 @@ function Threads({ dump }: { dump: ThreadDump }) {
           <label className="text-caption-12-medium" htmlFor="in-thread-sort">
             정렬
           </label>
-          <Select id="in-thread-sort" value={sort} onChange={(e) => setSort(e.target.value as 'cause' | 'dump' | 'cpu')}>
-            <option value="cause">원인 가능성 순</option>
+          <Select id="in-thread-sort" value={sort} onChange={(e) => setSort(e.target.value as 'trouble' | 'dump' | 'cpu')}>
+            <option value="trouble">문제 순 (데드락 · 락 · BLOCKED 먼저)</option>
             <option value="dump">덤프 순서</option>
             <option value="cpu" disabled={!hasCpu} title={hasCpu ? undefined : '이 덤프에는 cpu= 가 없습니다'}>
               CPU 시간 많은 순

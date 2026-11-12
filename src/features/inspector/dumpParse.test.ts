@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blockedSummary, lockOwners, parseDeadlocks, parseDump, sortByCause, stateCounts } from './dumpParse'
+import { blockedSummary, lockOwners, parseDeadlocks, parseDump, sortByTrouble, stateCounts } from './dumpParse'
 
 // jstack 이 실제로 찍는 모양을 줄였다. 스레드 사이는 빈 줄, 프레임은 탭으로 들여쓴다. 첫 스레드만 cpu= 가 있다 (JDK 11+ · agent-extension)
 const DUMP = [
@@ -152,8 +152,8 @@ describe('데드락 절', () => {
   })
 })
 
-// 원인 가능성 순 — 일부러 원문 순서를 답과 반대로 섞었다
-const CAUSE = [
+// 문제 순 — 일부러 원문 순서를 답과 반대로 섞었다
+const TROUBLE = [
   '"idle-b" #1 prio=5 cpu=1.00ms waiting on condition',
   '   java.lang.Thread.State: WAITING (parking)',
   '\tat jdk.internal.misc.Unsafe.park(Native Method)',
@@ -225,9 +225,9 @@ const CAUSE = [
   '',
 ].join('\n')
 
-describe('원인 가능성 순', () => {
-  const threads = parseDump(CAUSE)
-  const order = sortByCause(threads, parseDeadlocks(CAUSE)).map((t) => t.name)
+describe('문제 순', () => {
+  const threads = parseDump(TROUBLE)
+  const order = sortByTrouble(threads, parseDeadlocks(TROUBLE)).map((t) => t.name)
 
   it('데드락 → 락을 쥔 쪽 → BLOCKED → RUNNABLE → 대기 순이고, 같은 등급은 보조 기준 · 이름순', () => {
     expect(order).toEqual([
