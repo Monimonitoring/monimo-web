@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blockedSummary, lockOwners, parseDeadlocks, parseDump, stateCounts } from './dumpParse'
+import { blockedSummary, groupByStack, lockOwners, parseDeadlocks, parseDump, sortThreads, stateCounts } from './dumpParse'
 
 // jstack 이 실제로 찍는 모양을 줄였다. 스레드 사이는 빈 줄, 프레임은 탭으로 들여쓴다. 첫 스레드만 cpu= 가 있다 (JDK 11+ · agent-extension)
 const DUMP = [
@@ -149,5 +149,77 @@ describe('데드락 절', () => {
     expect(threads.map((t) => t.name)).toEqual(['dead-1', 'dead-2'])
     expect(threads[0].depth).toBe(1)
     expect(lockOwners(threads).get('0x000000008bb19af0')).toBe('dead-2')
+  })
+})
+
+describe('열 정렬', () => {
+  const threads = parseDump(DUMP) // exec-12(cpu 1234.56, locked, depth 3) · exec-7(BLOCKED, depth 2) · exec-10(BLOCKED, depth 1) · lettuce(WAITING, park) · C2(RUNNABLE, depth 0)
+  const names = (sort: Parameters<typeof sortThreads>[1]) => sortThreads(threads, sort).map((t) => t.name)
+
+  it('없으면 덤프 순서 그대로, 같은 배열을 돌려준다', () => {
+    expect(sortThreads(threads, null)).toBe(threads)
+  })
+
+  it('이름은 숫자를 숫자로 비교한다 (exec-7 < exec-10 < exec-12)', () => {
+    expect(names({ col: 'name', dir: 'asc' })).toEqual(['C2 CompilerThread0', 'http-nio-8080-exec-7', 'http-nio-8080-exec-10', 'http-nio-8080-exec-12', 'lettuce-eventExecutorLoop-1-3'])
+  })
+
+  it('상태는 JDK 선언 순서(RUNNABLE → BLOCKED → WAITING), 같으면 덤프 순서', () => {
+    expect(names({ col: 'state', dir: 'asc' })).toEqual(['http-nio-8080-exec-12', 'C2 CompilerThread0', 'http-nio-8080-exec-7', 'http-nio-8080-exec-10', 'lettuce-eventExecutorLoop-1-3'])
+  })
+
+  it('cpu= 가 없는 스레드는 오름 · 내림 어느 쪽이든 맨 뒤', () => {
+    expect(names({ col: 'cpu', dir: 'desc' })[0]).toBe('http-nio-8080-exec-12')
+    expect(names({ col: 'cpu', dir: 'asc' })[0]).toBe('http-nio-8080-exec-12')
+    expect(names({ col: 'cpu', dir: 'asc' }).slice(1)).toEqual(['http-nio-8080-exec-7', 'http-nio-8080-exec-10', 'lettuce-eventExecutorLoop-1-3', 'C2 CompilerThread0'])
+  })
+
+  it('락은 주소순이고 대기 없는 스레드는 맨 뒤, 깊이는 수치', () => {
+    expect(names({ col: 'lock', dir: 'asc' })).toEqual(['http-nio-8080-exec-7', 'http-nio-8080-exec-10', 'lettuce-eventExecutorLoop-1-3', 'http-nio-8080-exec-12', 'C2 CompilerThread0'])
+    expect(names({ col: 'depth', dir: 'desc' })).toEqual(['http-nio-8080-exec-12', 'http-nio-8080-exec-7', 'http-nio-8080-exec-10', 'lettuce-eventExecutorLoop-1-3', 'C2 CompilerThread0'])
+  })
+})
+
+// 같은 스택 — exec 셋은 at 줄이 같고 락 주소만 다르다. idle 은 스택이 없다
+const STACKS = [
+  '"exec-1" #1 daemon prio=5 waiting on condition',
+  '   java.lang.Thread.State: WAITING (parking)',
+  '\tat jdk.internal.misc.Unsafe.park(Native Method)',
+  '\t- parking to wait for <0x0000000000000a01> (a java.util.concurrent.ForkJoinPool)',
+  '\tat java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:1)',
+  '',
+  '"other" #2 daemon prio=5 runnable',
+  '   java.lang.Thread.State: RUNNABLE',
+  '\tat java.net.SocketInputStream.read(Native Method)',
+  '',
+  '"exec-2" #3 daemon prio=5 waiting on condition',
+  '   java.lang.Thread.State: WAITING (parking)',
+  '\tat jdk.internal.misc.Unsafe.park(Native Method)',
+  '\t- parking to wait for <0x0000000000000a02> (a java.util.concurrent.ForkJoinPool)',
+  '\tat java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:1)',
+  '',
+  '"exec-3" #4 daemon prio=5 runnable',
+  '   java.lang.Thread.State: RUNNABLE',
+  '\tat jdk.internal.misc.Unsafe.park(Native Method)',
+  '\tat java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:1)',
+  '',
+  '"idle" #5 daemon prio=5 runnable',
+  '   java.lang.Thread.State: RUNNABLE',
+  '',
+].join('\n')
+
+describe('같은 스택 묶음', () => {
+  const threads = parseDump(STACKS)
+  const groups = groupByStack(threads)
+
+  it('at 줄이 같으면 락 주소 · 상태가 달라도 한 묶음, 처음 나타난 자리 순', () => {
+    expect(groups.map((g) => g.threads.map((t) => t.name))).toEqual([['exec-1', 'exec-2', 'exec-3'], ['other'], ['idle']])
+    expect(groups[0].states).toEqual({ WAITING: 2, RUNNABLE: 1 })
+    expect(groups[2].key).toBe('')
+  })
+
+  it('정렬된 순서로 넣으면 묶음도 그 순서를 따른다 (이름 내림 → other 가 먼저, 묶음 안은 exec-3 · 2 · 1)', () => {
+    const sorted = groupByStack(sortThreads(threads, { col: 'name', dir: 'desc' }))
+    expect(sorted.map((g) => g.threads.map((t) => t.name))).toEqual([['other'], ['idle'], ['exec-3', 'exec-2', 'exec-1']])
   })
 })

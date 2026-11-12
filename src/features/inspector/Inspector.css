@@ -134,3 +134,11 @@
   .in-dumps { grid-template-columns: minmax(0, 1fr); }
   .in-dump-list { position: static; }
 }
+
+/* 스레드 표 열 머리 정렬 — 누를 때마다 자연 방향 → 반대 → 덤프 순서 */
+.in-th-sort { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.in-th-sort:hover { color: var(--color-text-primary); }
+.in-th-sort:focus-visible { outline: 2px solid var(--color-accent-default); outline-offset: 2px; }
+.in-th-sort__mark { width: 1em; font-size: 9px; }
+.in-thread-row__fold { display: inline-block; width: 1em; color: var(--color-text-tertiary); }
+.in-thread-row--member .ds-table__td:first-child { padding-left: calc(var(--space-3) + var(--space-5)); }
