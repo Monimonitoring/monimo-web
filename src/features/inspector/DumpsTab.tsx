@@ -23,7 +23,7 @@ import {
   type Tone,
 } from '@/design-system'
 import { useServiceName } from '@/stores'
-import { blockedSummary, lockOwners, parseDump, stateCounts, THREAD_STATES, type DumpThread, type ThreadState } from './dumpParse'
+import { blockedSummary, lockOwners, parseDeadlocks, parseDump, stateCounts, THREAD_STATES, type DumpThread, type ThreadState } from './dumpParse'
 import type { DumpPeriod } from './useInspectorParams'
 
 // 93d 는 보관 기간(TTL) 그대로라 기간 필터 없이 전체를 받는다 — backend 범위 상한이 7일(422 TIME_RANGE_TOO_WIDE)
@@ -236,18 +236,25 @@ function DumpViewer({ dumpId, agents, onRequest }: { dumpId: string; agents: { a
 
 function Threads({ dump }: { dump: ThreadDump }) {
   const threads = useMemo(() => parseDump(dump.dump), [dump.dump])
+  const deadlocks = useMemo(() => parseDeadlocks(dump.dump), [dump.dump])
   const owners = useMemo(() => lockOwners(threads), [threads])
   const counts = stateCounts(threads)
   const summary = blockedSummary(threads, owners)
+  const hasCpu = threads.some((t) => t.cpuMs !== null)
 
   const [needle, setNeedle] = useState('')
   const [state, setState] = useState<ThreadState | ''>('')
   const [blockedOnly, setBlockedOnly] = useState(false)
-  // 처음에는 BLOCKED 가 있으면 그 첫 스레드를, 없으면 첫 스레드를 연다
-  const [picked, setPicked] = useState<string | null>(() => (threads.find((t) => t.state === 'BLOCKED') ?? threads[0])?.name ?? null)
+  const [sort, setSort] = useState<'dump' | 'cpu'>('dump')
+  // 처음에는 데드락에 걸린 스레드, 없으면 BLOCKED, 없으면 첫 스레드를 연다
+  const [picked, setPicked] = useState<string | null>(
+    () => deadlocks[0]?.[0] ?? (threads.find((t) => t.state === 'BLOCKED') ?? threads[0])?.name ?? null,
+  )
 
   const n = needle.trim().toLowerCase()
-  const rows = threads.filter((t) => (!n || t.name.toLowerCase().includes(n)) && (!state || t.state === state) && (!blockedOnly || t.state === 'BLOCKED'))
+  const filtered = threads.filter((t) => (!n || t.name.toLowerCase().includes(n)) && (!state || t.state === state) && (!blockedOnly || t.state === 'BLOCKED'))
+  // cpu= 가 없는 스레드(옛 모양)는 맨 뒤로
+  const rows = sort === 'cpu' ? [...filtered].sort((a, b) => (b.cpuMs ?? -1) - (a.cpuMs ?? -1)) : filtered
   const current = threads.find((t) => t.name === picked) ?? null
 
   return (
@@ -260,6 +267,11 @@ function Threads({ dump }: { dump: ThreadDump }) {
             </Badge>
           ))}
         </div>
+        {deadlocks.length ? (
+          <span className="text-body-13 in-crit" role="alert">
+            데드락 {deadlocks.length}건 — {deadlocks.map((c) => c.join(' ↔ ')).join(' / ')}
+          </span>
+        ) : null}
         {summary ? <span className="text-body-13 in-crit">{summary}</span> : <span className="text-caption-12 in-muted">BLOCKED 스레드가 없습니다</span>}
       </Card>
 
@@ -284,6 +296,13 @@ function Threads({ dump }: { dump: ThreadDump }) {
               BLOCKED만
             </span>
           </span>
+          <label className="text-caption-12-medium" htmlFor="in-thread-sort">
+            정렬
+          </label>
+          <Select id="in-thread-sort" value={sort} onChange={(e) => setSort(e.target.value as 'dump' | 'cpu')} disabled={!hasCpu} title={hasCpu ? undefined : '이 덤프에는 cpu= 가 없습니다'}>
+            <option value="dump">덤프 순서</option>
+            <option value="cpu">CPU 시간 많은 순</option>
+          </Select>
           <span className="text-caption-12 in-muted in-threads__count">
             {threads.length}개 중 {rows.length}개 표시
           </span>
@@ -298,6 +317,7 @@ function Threads({ dump }: { dump: ThreadDump }) {
                   <TableHeaderCell>스레드 이름</TableHeaderCell>
                   <TableHeaderCell>상태</TableHeaderCell>
                   <TableHeaderCell>대기 중인 락</TableHeaderCell>
+                  <TableHeaderCell align="right">CPU 시간</TableHeaderCell>
                   <TableHeaderCell align="right">스택 깊이</TableHeaderCell>
                 </TableRow>
               </TableHead>
@@ -311,6 +331,7 @@ function Threads({ dump }: { dump: ThreadDump }) {
                     <TableCell>
                       <LockCell t={t} owners={owners} />
                     </TableCell>
+                    <TableCell type="number">{t.cpuMs === null ? '—' : `${t.cpuMs.toFixed(1)} ms`}</TableCell>
                     <TableCell type="number">{t.depth}</TableCell>
                   </TableRow>
                 ))}
