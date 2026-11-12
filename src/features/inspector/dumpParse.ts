@@ -1,10 +1,12 @@
-// 스레드 덤프 본문(jstack 형식) 읽기 — 스레드마다 이름 · 상태 · 기다리는 락 · 쥔 락 · 스택 깊이. React 와 무관한 계산만 둔다
+// 스레드 덤프 본문(jstack 형식) 읽기 — 스레드마다 이름 · 상태 · CPU 시간 · 기다리는 락 · 쥔 락 · 스택 깊이, 끝의 데드락 절. React 와 무관한 계산만 둔다
 //
-//   "http-nio-8080-exec-7" #142 daemon prio=5 … waiting for monitor entry  [0x…]
+//   "http-nio-8080-exec-7" #142 daemon prio=5 cpu=12.34ms waiting for monitor entry  [0x…]
 //      java.lang.Thread.State: BLOCKED (on object monitor)
-//   	at com.shop.order.OrderService.create(OrderService.java:87)
-//   	- waiting to lock <0x00007f3a8c41e2b0> (a com.shop.order.StockLock)
-//   	- locked <0x00007f3a8c41f118> (a com.shop.order.OrderContext)
+//      at com.shop.order.OrderService.create(OrderService.java:87)
+//      - waiting to lock <0x00007f3a8c41e2b0> (a com.shop.order.StockLock)
+//      - locked <0x00007f3a8c41f118> (a com.shop.order.OrderContext)
+//
+// agent-extension 은 이 모양으로 쓰되 nid · elapsed 가 없다 (shop #57). 머리줄에 상태 낱말을 적던 옛 모양 덤프도 보관 기간 동안 읽힌다
 
 export type ThreadState = 'RUNNABLE' | 'WAITING' | 'TIMED_WAITING' | 'BLOCKED' | 'NEW' | 'TERMINATED'
 export const THREAD_STATES: ThreadState[] = ['RUNNABLE', 'WAITING', 'TIMED_WAITING', 'BLOCKED']
@@ -12,8 +14,12 @@ export const THREAD_STATES: ThreadState[] = ['RUNNABLE', 'WAITING', 'TIMED_WAITI
 export type LockRef = { addr: string; cls: string }
 
 export type DumpThread = {
+  /** 덤프 안의 순번. 풀 일꾼은 이름이 같아(OkHttp collector ×3) 이름으로는 고르거나 key 를 줄 수 없다 */
+  id: number
   name: string
   state: ThreadState
+  /** 머리줄 cpu=…ms 누적 CPU 시간. 없는 모양이면 null */
+  cpuMs: number | null
   /** 이 스레드의 원문 줄 (머리 줄 포함) */
   lines: string[]
   /** 기다리는 대상 — waiting to lock(모니터) · waiting on(Object.wait) · parking to wait for(LockSupport.park) */
@@ -26,6 +32,9 @@ export type DumpThread = {
   depth: number
 }
 
+const HEAD = /^"(.+?)"\s/
+const HEAD_STATE = /\s(RUNNABLE|BLOCKED|WAITING|TIMED_WAITING|NEW|TERMINATED)\b/
+const CPU = /\scpu=(\d+(?:\.\d+)?)ms/
 const WAIT = /^\s*- (waiting to lock|waiting on|parking to wait for)\s+<(0x[0-9a-f]+)>\s+\(a ([^)]+)\)/
 const LOCKED = /^\s*- locked\s+<(0x[0-9a-f]+)>\s+\(a ([^)]+)\)/
 const KIND = { 'waiting to lock': 'lock', 'waiting on': 'wait', 'parking to wait for': 'park' } as const
@@ -34,9 +43,13 @@ export function parseDump(text: string): DumpThread[] {
   const out: DumpThread[] = []
   let cur: DumpThread | null = null
   for (const line of text.split('\n')) {
-    const head = /^"(.+?)"\s/.exec(line)
+    const head = HEAD.exec(line)
     if (head) {
-      cur = { name: head[1], state: 'RUNNABLE', lines: [line], waiting: null, waitingLine: -1, locked: [], depth: 0 }
+      // 상태 낱말은 이름 뒤에서만 찾는다 — 이름에 WAITING 이 들어간 스레드가 있을 수 있다
+      const rest = line.slice(head[0].length)
+      const hs = HEAD_STATE.exec(rest)
+      const cpu = CPU.exec(rest)
+      cur = { id: out.length, name: head[1], state: (hs?.[1] as ThreadState | undefined) ?? 'RUNNABLE', cpuMs: cpu ? Number(cpu[1]) : null, lines: [line], waiting: null, waitingLine: -1, locked: [], depth: 0 }
       out.push(cur)
       continue
     }
@@ -58,6 +71,37 @@ export function parseDump(text: string): DumpThread[] {
       const l = LOCKED.exec(line)
       if (l) cur.locked.push({ addr: l[1], cls: l[2] })
     }
+  }
+  return out
+}
+
+/**
+ * 끝의 데드락 절 — 고리마다 스레드 이름 묶음. 없으면 빈 배열
+ *
+ *   Found one Java-level deadlock:
+ *   =============================
+ *   "dead-1":
+ *     waiting to lock <0x…> (a java.lang.Object),
+ *     which is held by "dead-2"
+ *   …
+ *   Java stack information for the threads listed above:
+ */
+export function parseDeadlocks(text: string): string[][] {
+  const out: string[][] = []
+  let cur: string[] | null = null
+  for (const line of text.split('\n')) {
+    if (line.startsWith('Found one Java-level deadlock')) {
+      cur = []
+      out.push(cur)
+      continue
+    }
+    if (!cur) continue
+    if (line.startsWith('Java stack information')) {
+      cur = null
+      continue
+    }
+    const m = /^"(.+)":$/.exec(line)
+    if (m) cur.push(m[1])
   }
   return out
 }

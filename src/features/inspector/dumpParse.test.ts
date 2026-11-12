@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { blockedSummary, lockOwners, parseDump, stateCounts } from './dumpParse'
+import { blockedSummary, lockOwners, parseDeadlocks, parseDump, stateCounts } from './dumpParse'
 
-// jstack 이 실제로 찍는 모양을 줄였다. 스레드 사이는 빈 줄, 프레임은 탭으로 들여쓴다
+// jstack 이 실제로 찍는 모양을 줄였다. 스레드 사이는 빈 줄, 프레임은 탭으로 들여쓴다. 첫 스레드만 cpu= 가 있다 (JDK 11+ · agent-extension)
 const DUMP = [
   '2026-09-21 14:05:41',
   'Full thread dump OpenJDK 64-Bit Server VM (21.0.4+7-LTS mixed mode, sharing):',
   '',
-  '"http-nio-8080-exec-12" #20 daemon prio=5 os_prio=0 tid=0x1 nid=0x2 runnable  [0x3]',
+  '"http-nio-8080-exec-12" #20 daemon prio=5 os_prio=0 cpu=1234.56ms elapsed=88.10s tid=0x1 nid=0x2 runnable  [0x3]',
   '   java.lang.Thread.State: RUNNABLE',
   '\tat java.net.SocketInputStream.socketRead0(Native Method)',
   '\tat com.shop.order.OrderRepository.decreaseStock(OrderRepository.java:132)',
@@ -69,5 +69,85 @@ describe('스레드 덤프 읽기', () => {
   it('BLOCKED 가 없으면 요약이 없다', () => {
     const calm = parseDump(DUMP).filter((t) => t.state !== 'BLOCKED')
     expect(blockedSummary(calm, lockOwners(calm))).toBeNull()
+  })
+
+  it('머리줄 cpu= 를 읽고, 없으면 null', () => {
+    expect(threads[0].cpuMs).toBe(1234.56)
+    expect(threads[1].cpuMs).toBeNull()
+  })
+
+  it('데드락 절이 없으면 빈 배열', () => {
+    expect(parseDeadlocks(DUMP)).toEqual([])
+  })
+})
+
+// agent-extension 이 #57 전에 쓰던 모양 — 상태 줄 없이 머리줄에 상태 낱말. 보관 기간(3일) 동안 남아 있다
+const OLD = [
+  '"pool-1-thread-2" #31 daemon prio=5 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1a2b3c',
+  '\tat jdk.internal.misc.Unsafe.park(Native Method)',
+  '\t- waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1a2b3c',
+  '',
+  '"WAITING-room-keeper" #32 prio=5 RUNNABLE',
+  '\tat com.shop.Keeper.run(Keeper.java:10)',
+  '',
+].join('\n')
+
+describe('옛 모양 · 이름에 상태 낱말이 든 스레드', () => {
+  const threads = parseDump(OLD)
+
+  it('상태 줄이 없으면 머리줄의 상태 낱말을 쓴다', () => {
+    expect(threads[0].state).toBe('TIMED_WAITING')
+    expect(threads[0].cpuMs).toBeNull()
+  })
+
+  it('이름 안의 낱말은 상태로 보지 않는다', () => {
+    expect(threads[1].name).toBe('WAITING-room-keeper')
+    expect(threads[1].state).toBe('RUNNABLE')
+  })
+})
+
+const DEADLOCK = [
+  '"dead-1" #14 prio=5 cpu=0.41ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat Full.lambda$main$0(Full.java:6)',
+  '\t- waiting to lock <0x000000008bb19af0> (a java.lang.Object)',
+  '\t- locked <0x000000008bb19ae0> (a java.lang.Object)',
+  '',
+  '"dead-2" #15 prio=5 cpu=0.39ms waiting for monitor entry',
+  '   java.lang.Thread.State: BLOCKED (on object monitor)',
+  '\tat Full.lambda$main$1(Full.java:7)',
+  '\t- waiting to lock <0x000000008bb19ae0> (a java.lang.Object)',
+  '\t- locked <0x000000008bb19af0> (a java.lang.Object)',
+  '',
+  'Found one Java-level deadlock:',
+  '=============================',
+  '"dead-1":',
+  '  waiting to lock <0x000000008bb19af0> (a java.lang.Object),',
+  '  which is held by "dead-2"',
+  '"dead-2":',
+  '  waiting to lock <0x000000008bb19ae0> (a java.lang.Object),',
+  '  which is held by "dead-1"',
+  '',
+  'Java stack information for the threads listed above:',
+  '===================================================',
+  '"dead-1":',
+  '\tat Full.lambda$main$0(Full.java:6)',
+  '"dead-2":',
+  '\tat Full.lambda$main$1(Full.java:7)',
+  '',
+  'Found 1 deadlock.',
+  '',
+].join('\n')
+
+describe('데드락 절', () => {
+  it('고리마다 스레드 이름 묶음을 돌려준다', () => {
+    expect(parseDeadlocks(DEADLOCK)).toEqual([['dead-1', 'dead-2']])
+  })
+
+  it('절 안의 "이름": 줄과 스택은 스레드로 세지 않는다', () => {
+    const threads = parseDump(DEADLOCK)
+    expect(threads.map((t) => t.name)).toEqual(['dead-1', 'dead-2'])
+    expect(threads[0].depth).toBe(1)
+    expect(lockOwners(threads).get('0x000000008bb19af0')).toBe('dead-2')
   })
 })

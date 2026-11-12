@@ -95,6 +95,8 @@ npm run build                    # 타입 검사 + 빌드
 README 「AI 와 일한 방법」 절과 `docs/prompts/`(프롬프트 로그 : 코드와 같은 PR 에)를 두었다. 하네스 정본은 backend `docs/seungjo/harness.md` 한 곳이고 여기서는 링크만 한다.
 - 2026-10-26 문서 · 주석의 우리말 조어를 현업 이름으로 바꿨다 (backend `#240` · ADR `#73`).
 - 2026-10-26 코드 안 문자열도 같은 이름으로 바꿨다 (backend `#241`) : **메뉴 · 화면 제목이 Service map · Inspector** 로, 상태 카드 이름이 Watchdog 으로 바뀌었다(안내 문장은 한국어). 「Detector 가 …」 안내 · 사이드바 「Self-monitoring」 · 가짜 응답 문구를 서버와 같게
+- 2026-11-10 로컬 전체(실서버 · 쇼핑몰)로 로그인 · 설정 · Inspector · 덤프 e2e. 스레드 수 카드 「현재」가 한 줄 값이던 것을 `total: true` 로 (`#100`)
+- 2026-11-13 덤프 탭이 상태를 전부 RUNNABLE 로 보이던 결함 (`#102`, shop `#57`). extension 글 모양이 jstack 과 달랐고 파서는 jstack 가정이라 extension 을 jstack 모양으로 맞췄다. 파서는 머리줄 `cpu=` 와 끝의 데드락 절을 더 읽고, 상태 줄이 없는 옛 모양(보관 3일)은 머리줄 상태 낱말로 읽는다. 화면에 「CPU 시간」 열 · CPU 많은 순 정렬 · 데드락 경고 줄. 덤프 본문 형식의 주인은 수집 파트(승조)다
 
 ## 6. 지금 막혀 있는 것
 
