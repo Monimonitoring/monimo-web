@@ -51,9 +51,11 @@ export function InspectorPage() {
           dumpId={p.dumpId}
           dumpAgent={p.dumpAgent}
           period={p.period}
+          sort={p.dumpSort}
           onOpen={p.openDump}
           onAgent={p.setDumpAgent}
           onPeriod={p.setPeriod}
+          onSort={p.setDumpSort}
           onRequest={setRequestFor}
         />
       ) : (

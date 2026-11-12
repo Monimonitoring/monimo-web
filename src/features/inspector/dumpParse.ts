@@ -106,6 +106,64 @@ export function parseDeadlocks(text: string): string[][] {
   return out
 }
 
+export type DumpSortCol = 'name' | 'state' | 'lock' | 'cpu' | 'depth'
+export const DUMP_SORT_COLS: DumpSortCol[] = ['name', 'state', 'lock', 'cpu', 'depth']
+export type DumpSort = { col: DumpSortCol; dir: 'asc' | 'desc' }
+
+// JDK 가 Thread.State 를 선언한 순서 그대로 — 우리가 매긴 순서가 아니다
+const STATE_ORDER: Record<ThreadState, number> = { NEW: 0, RUNNABLE: 1, BLOCKED: 2, WAITING: 3, TIMED_WAITING: 4, TERMINATED: 5 }
+// exec-2 가 exec-10 앞에 오게 숫자는 숫자로 비교한다
+const collator = new Intl.Collator(undefined, { numeric: true })
+
+/** 값이 없는 쪽(락 없음 · cpu= 없음)은 방향과 무관하게 맨 뒤 */
+function missingLast<T>(a: T | null | undefined, b: T | null | undefined, cmp: (x: T, y: T) => number, sign: number): number {
+  if (a == null && b == null) return 0
+  if (a == null) return sign
+  if (b == null) return -sign
+  return cmp(a, b)
+}
+
+/** 열 하나로 정렬한 새 배열. sort 가 없으면 덤프 순서 그대로, 동점은 덤프 순서 */
+export function sortThreads(threads: DumpThread[], sort: DumpSort | null): DumpThread[] {
+  if (!sort) return threads
+  const sign = sort.dir === 'asc' ? 1 : -1
+  const cmp: Record<DumpSortCol, (a: DumpThread, b: DumpThread) => number> = {
+    name: (a, b) => collator.compare(a.name, b.name),
+    state: (a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state],
+    lock: (a, b) => missingLast(a.waiting?.addr, b.waiting?.addr, (x, y) => (x < y ? -1 : x > y ? 1 : 0), sign),
+    cpu: (a, b) => missingLast(a.cpuMs, b.cpuMs, (x, y) => x - y, sign),
+    depth: (a, b) => a.depth - b.depth,
+  }
+  return [...threads].sort((a, b) => sign * cmp[sort.col](a, b) || a.id - b.id)
+}
+
+export type StackGroup = {
+  /** at … 줄을 이은 것. 펼침 상태의 열쇠 */
+  key: string
+  /** 묶음의 스레드들, 들어온 순서. 첫 스레드가 접힌 줄의 대표 */
+  threads: DumpThread[]
+  states: Partial<Record<ThreadState, number>>
+}
+
+/**
+ * at … 줄이 글자 단위로 같은 스레드 묶음. 묶음 순서와 묶음 안 순서는 들어온 순서(정렬된 뒤 처음 나타난 자리)를 지킨다.
+ * 머리줄과 락 줄은 스레드마다 다르므로(이름 · 락 주소) 기준에서 뺀다
+ */
+export function groupByStack(threads: DumpThread[]): StackGroup[] {
+  const m = new Map<string, StackGroup>()
+  for (const t of threads) {
+    const key = t.lines
+      .filter((l) => /^\s*at /.test(l))
+      .map((l) => l.trim())
+      .join('\n')
+    let g = m.get(key)
+    if (!g) m.set(key, (g = { key, threads: [], states: {} }))
+    g.threads.push(t)
+    g.states[t.state] = (g.states[t.state] ?? 0) + 1
+  }
+  return [...m.values()]
+}
+
 /** 락 주소 → 그 락을 쥔 스레드 이름 */
 export function lockOwners(threads: DumpThread[]): Map<string, string> {
   const m = new Map<string, string>()

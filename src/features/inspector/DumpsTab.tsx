@@ -23,7 +23,21 @@ import {
   type Tone,
 } from '@/design-system'
 import { useServiceName } from '@/stores'
-import { blockedSummary, lockOwners, parseDeadlocks, parseDump, stateCounts, THREAD_STATES, type DumpThread, type ThreadState } from './dumpParse'
+import {
+  blockedSummary,
+  groupByStack,
+  lockOwners,
+  parseDeadlocks,
+  parseDump,
+  sortThreads,
+  stateCounts,
+  THREAD_STATES,
+  type DumpSort,
+  type DumpSortCol,
+  type DumpThread,
+  type StackGroup,
+  type ThreadState,
+} from './dumpParse'
 import type { DumpPeriod } from './useInspectorParams'
 
 // 93d 는 보관 기간(TTL) 그대로라 기간 필터 없이 전체를 받는다 — backend 범위 상한이 7일(422 TIME_RANGE_TOO_WIDE)
@@ -37,15 +51,18 @@ type Props = {
   dumpId: string | null
   dumpAgent: string | null
   period: DumpPeriod
+  /** 스레드 표 정렬 (주소 dsort). null 이면 덤프 순서 */
+  sort: DumpSort | null
   onOpen: (id: string) => void
   onAgent: (key: string | null) => void
   onPeriod: (p: DumpPeriod) => void
+  onSort: (s: DumpSort | null) => void
   /** 「다시 요청」 — 같은 파드로 요청 모달을 연다 */
   onRequest: (agent: { agent_uuid: string; agent_key: string }) => void
 }
 
 /** 스레드 덤프 탭 (S05) — 왼쪽 덤프 목록, 오른쪽 고른 덤프의 스레드 표 · 스택 */
-export function DumpsTab({ dumpId, dumpAgent, period, onOpen, onAgent, onPeriod, onRequest }: Props) {
+export function DumpsTab({ dumpId, dumpAgent, period, sort, onOpen, onAgent, onPeriod, onSort, onRequest }: Props) {
   const serviceName = useServiceName()
   // from · to 는 쌍으로만 받는다(하나만 보내면 400). 끝을 조회 시각으로 매번 새로 찍어 탭을 연 뒤 뜬 덤프도 다시 받으면 들어온다
   const range = () => {
@@ -139,7 +156,7 @@ export function DumpsTab({ dumpId, dumpAgent, period, onOpen, onAgent, onPeriod,
 
       <div className="in-dump-main">
         {selected ? (
-          <DumpViewer key={selected} dumpId={selected} agents={agents.data?.items} onRequest={onRequest} />
+          <DumpViewer key={selected} dumpId={selected} agents={agents.data?.items} sort={sort} onSort={onSort} onRequest={onRequest} />
         ) : (
           <Card>
             <p className="in-empty text-body-13" role="status">왼쪽에서 덤프를 고르세요.</p>
@@ -167,7 +184,15 @@ function useCopied() {
   return { copied, copy }
 }
 
-function DumpViewer({ dumpId, agents, onRequest }: { dumpId: string; agents: { agent_uuid: string; agent_key: string; status: string }[] | undefined; onRequest: Props['onRequest'] }) {
+type ViewerProps = {
+  dumpId: string
+  agents: { agent_uuid: string; agent_key: string; status: string }[] | undefined
+  sort: DumpSort | null
+  onSort: Props['onSort']
+  onRequest: Props['onRequest']
+}
+
+function DumpViewer({ dumpId, agents, sort, onSort, onRequest }: ViewerProps) {
   const { isAdmin } = useAuth()
   const q = useQuery({ queryKey: ['thread-dump', dumpId], queryFn: ({ signal }) => getThreadDump(dumpId, signal), staleTime: Infinity })
   const { copied, copy } = useCopied()
@@ -229,35 +254,38 @@ function DumpViewer({ dumpId, agents, onRequest }: { dumpId: string; agents: { a
           ))}
         </dl>
       </Card>
-      <Threads dump={d} />
+      <Threads dump={d} sort={sort} onSort={onSort} />
     </>
   )
 }
 
-function Threads({ dump }: { dump: ThreadDump }) {
+function Threads({ dump, sort, onSort }: { dump: ThreadDump; sort: DumpSort | null; onSort: Props['onSort'] }) {
   const threads = useMemo(() => parseDump(dump.dump), [dump.dump])
   const deadlocks = useMemo(() => parseDeadlocks(dump.dump), [dump.dump])
   const owners = useMemo(() => lockOwners(threads), [threads])
   const counts = stateCounts(threads)
   const summary = blockedSummary(threads, owners)
-  const hasCpu = threads.some((t) => t.cpuMs !== null)
 
   const [needle, setNeedle] = useState('')
   const [state, setState] = useState<ThreadState | ''>('')
   const [blockedOnly, setBlockedOnly] = useState(false)
-  const [sort, setSort] = useState<'dump' | 'cpu'>('dump')
-  // 처음에는 데드락에 걸린 스레드, 없으면 BLOCKED, 없으면 첫 스레드를 연다
-  const [picked, setPicked] = useState<number | null>(() => {
-    const dead = deadlocks[0]?.[0]
-    const first = (dead ? threads.find((t) => t.name === dead) : undefined) ?? threads.find((t) => t.state === 'BLOCKED') ?? threads[0]
-    return first?.id ?? null
-  })
+  // 덤프를 열 때 표 맨 위 스레드를 고른 것으로 시작한다 — 스택 칸이 비지 않게. 그 뒤 정렬 · 필터를 바꿔도 사람이 다시 고르기 전엔 그대로
+  const [picked, setPicked] = useState<number | null>(() => sortThreads(threads, sort)[0]?.id ?? null)
+  // 펼친 묶음 (StackGroup.key)
+  const [open, setOpen] = useState<Set<string>>(() => new Set())
 
   const n = needle.trim().toLowerCase()
   const filtered = threads.filter((t) => (!n || t.name.toLowerCase().includes(n)) && (!state || t.state === state) && (!blockedOnly || t.state === 'BLOCKED'))
-  // cpu= 가 없는 스레드(옛 모양)는 맨 뒤로
-  const rows = sort === 'cpu' ? [...filtered].sort((a, b) => (b.cpuMs ?? -1) - (a.cpuMs ?? -1)) : filtered
+  const groups = groupByStack(sortThreads(filtered, sort))
   const current = threads.find((t) => t.id === picked) ?? null
+
+  const toggle = (key: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
 
   return (
     <>
@@ -298,45 +326,42 @@ function Threads({ dump }: { dump: ThreadDump }) {
               BLOCKED만
             </span>
           </span>
-          <label className="text-caption-12-medium" htmlFor="in-thread-sort">
-            정렬
-          </label>
-          <Select id="in-thread-sort" value={sort} onChange={(e) => setSort(e.target.value as 'dump' | 'cpu')} disabled={!hasCpu} title={hasCpu ? undefined : '이 덤프에는 cpu= 가 없습니다'}>
-            <option value="dump">덤프 순서</option>
-            <option value="cpu">CPU 시간 많은 순</option>
-          </Select>
           <span className="text-caption-12 in-muted in-threads__count">
-            {threads.length}개 중 {rows.length}개 표시
+            {threads.length}개 중 {filtered.length}개 표시
           </span>
         </div>
-        {rows.length === 0 ? (
+        {filtered.length === 0 ? (
           <p className="in-empty text-body-13" role="status">조건에 맞는 스레드가 없습니다.</p>
         ) : (
           <div className="in-threads__scroll">
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableHeaderCell>스레드 이름</TableHeaderCell>
-                  <TableHeaderCell>상태</TableHeaderCell>
-                  <TableHeaderCell>대기 중인 락</TableHeaderCell>
-                  <TableHeaderCell align="right">CPU 시간</TableHeaderCell>
-                  <TableHeaderCell align="right">스택 깊이</TableHeaderCell>
+                  <SortTh col="name" natural="asc" sort={sort} onSort={onSort}>
+                    스레드 이름
+                  </SortTh>
+                  <SortTh col="state" natural="asc" sort={sort} onSort={onSort}>
+                    상태
+                  </SortTh>
+                  <SortTh col="lock" natural="asc" sort={sort} onSort={onSort}>
+                    대기 중인 락
+                  </SortTh>
+                  <SortTh col="cpu" natural="desc" align="right" sort={sort} onSort={onSort}>
+                    CPU 시간
+                  </SortTh>
+                  <SortTh col="depth" natural="desc" align="right" sort={sort} onSort={onSort}>
+                    스택 깊이
+                  </SortTh>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((t) => (
-                  <TableRow key={t.id} onClick={() => setPicked(t.id)} selected={t.id === picked} aria-label={`${t.name} 스택 보기`}>
-                    <TableCell type="mono">{t.name}</TableCell>
-                    <TableCell type="badge">
-                      <Badge tone={threadTone(t.state)}>{t.state}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <LockCell t={t} owners={owners} />
-                    </TableCell>
-                    <TableCell type="number">{t.cpuMs === null ? '—' : `${t.cpuMs.toFixed(1)} ms`}</TableCell>
-                    <TableCell type="number">{t.depth}</TableCell>
-                  </TableRow>
-                ))}
+                {groups.map((g) =>
+                  g.threads.length === 1 ? (
+                    <ThreadRow key={g.threads[0].id} t={g.threads[0]} owners={owners} picked={picked} onPick={setPicked} />
+                  ) : (
+                    <GroupRows key={g.key} group={g} open={open.has(g.key)} owners={owners} picked={picked} onPick={setPicked} onToggle={() => toggle(g.key)} />
+                  ),
+                )}
               </TableBody>
             </Table>
           </div>
@@ -367,6 +392,86 @@ function Threads({ dump }: { dump: ThreadDump }) {
           <p className="in-empty text-body-13">표에서 스레드를 고르세요.</p>
         )}
       </Card>
+    </>
+  )
+}
+
+/** 열 머리 정렬 버튼 — 누를 때마다 그 열의 자연 방향 → 반대 방향 → 덤프 순서(해제) */
+function SortTh({
+  col,
+  natural,
+  align,
+  sort,
+  onSort,
+  children,
+}: {
+  col: DumpSortCol
+  natural: 'asc' | 'desc'
+  align?: 'left' | 'right'
+  sort: DumpSort | null
+  onSort: Props['onSort']
+  children: string
+}) {
+  const dir = sort?.col === col ? sort.dir : null
+  const next = () => onSort(dir === null ? { col, dir: natural } : dir === natural ? { col, dir: natural === 'asc' ? 'desc' : 'asc' } : null)
+  return (
+    <TableHeaderCell align={align} aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined}>
+      <button type="button" className="in-th-sort" onClick={next} title={dir === null ? '이 열로 정렬' : dir === natural ? '반대로 정렬' : '덤프 순서로'}>
+        {children}
+        <span aria-hidden="true" className="in-th-sort__mark">
+          {dir === 'asc' ? '▲' : dir === 'desc' ? '▼' : ''}
+        </span>
+      </button>
+    </TableHeaderCell>
+  )
+}
+
+type RowProps = { t: DumpThread; owners: Map<string, string>; picked: number | null; onPick: (id: number) => void; member?: boolean }
+
+function ThreadRow({ t, owners, picked, onPick, member }: RowProps) {
+  return (
+    <TableRow className={member ? 'in-thread-row--member' : undefined} onClick={() => onPick(t.id)} selected={t.id === picked} aria-label={`${t.name} 스택 보기`}>
+      <TableCell type="mono">{t.name}</TableCell>
+      <TableCell type="badge">
+        <Badge tone={threadTone(t.state)}>{t.state}</Badge>
+      </TableCell>
+      <TableCell>
+        <LockCell t={t} owners={owners} />
+      </TableCell>
+      <TableCell type="number">{t.cpuMs === null ? '—' : `${t.cpuMs.toFixed(1)} ms`}</TableCell>
+      <TableCell type="number">{t.depth}</TableCell>
+    </TableRow>
+  )
+}
+
+/** 같은 스택 묶음 — 접혀 있으면 대표 스레드 한 줄에 「외 N」, 누르면 전부 펼친다. 고른 스레드가 안에 있으면 접힌 줄을 표시한다 */
+function GroupRows({ group, open, owners, picked, onPick, onToggle }: { group: StackGroup; open: boolean; owners: Map<string, string>; picked: number | null; onPick: (id: number) => void; onToggle: () => void }) {
+  const head = group.threads[0]
+  const holds = picked !== null && group.threads.some((t) => t.id === picked)
+  return (
+    <>
+      <TableRow onClick={onToggle} selected={!open && holds} aria-expanded={open} aria-label={`${head.name} 외 ${group.threads.length - 1} ${open ? '접기' : '펼치기'}`}>
+        <TableCell type="mono">
+          <span aria-hidden="true" className="in-thread-row__fold">
+            {open ? '▾' : '▸'}
+          </span>
+          {head.name}
+          <span className="text-caption-12 in-muted"> 외 {group.threads.length - 1}</span>
+        </TableCell>
+        <TableCell type="badge">
+          {THREAD_STATES.filter((s) => group.states[s]).map((s) => (
+            <Badge key={s} tone={threadTone(s)}>
+              {s} {group.states[s]}
+            </Badge>
+          ))}
+        </TableCell>
+        <TableCell>
+          <span className="text-caption-12 in-muted">같은 스택 {group.threads.length}개</span>
+        </TableCell>
+        <TableCell type="number">{head.cpuMs === null ? '—' : `${head.cpuMs.toFixed(1)} ms`}</TableCell>
+        <TableCell type="number">{head.depth}</TableCell>
+      </TableRow>
+      {open ? group.threads.map((t) => <ThreadRow key={t.id} t={t} owners={owners} picked={picked} onPick={onPick} member />) : null}
     </>
   )
 }
