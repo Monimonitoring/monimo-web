@@ -14,6 +14,8 @@ export const THREAD_STATES: ThreadState[] = ['RUNNABLE', 'WAITING', 'TIMED_WAITI
 export type LockRef = { addr: string; cls: string }
 
 export type DumpThread = {
+  /** 덤프 안의 순번. 풀 일꾼은 이름이 같아(OkHttp collector ×3) 이름으로는 고르거나 key 를 줄 수 없다 */
+  id: number
   name: string
   state: ThreadState
   /** 머리줄 cpu=…ms 누적 CPU 시간. 없는 모양이면 null */
@@ -47,7 +49,7 @@ export function parseDump(text: string): DumpThread[] {
       const rest = line.slice(head[0].length)
       const hs = HEAD_STATE.exec(rest)
       const cpu = CPU.exec(rest)
-      cur = { name: head[1], state: (hs?.[1] as ThreadState | undefined) ?? 'RUNNABLE', cpuMs: cpu ? Number(cpu[1]) : null, lines: [line], waiting: null, waitingLine: -1, locked: [], depth: 0 }
+      cur = { id: out.length, name: head[1], state: (hs?.[1] as ThreadState | undefined) ?? 'RUNNABLE', cpuMs: cpu ? Number(cpu[1]) : null, lines: [line], waiting: null, waitingLine: -1, locked: [], depth: 0 }
       out.push(cur)
       continue
     }

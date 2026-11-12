@@ -247,15 +247,17 @@ function Threads({ dump }: { dump: ThreadDump }) {
   const [blockedOnly, setBlockedOnly] = useState(false)
   const [sort, setSort] = useState<'dump' | 'cpu'>('dump')
   // 처음에는 데드락에 걸린 스레드, 없으면 BLOCKED, 없으면 첫 스레드를 연다
-  const [picked, setPicked] = useState<string | null>(
-    () => deadlocks[0]?.[0] ?? (threads.find((t) => t.state === 'BLOCKED') ?? threads[0])?.name ?? null,
-  )
+  const [picked, setPicked] = useState<number | null>(() => {
+    const dead = deadlocks[0]?.[0]
+    const first = (dead ? threads.find((t) => t.name === dead) : undefined) ?? threads.find((t) => t.state === 'BLOCKED') ?? threads[0]
+    return first?.id ?? null
+  })
 
   const n = needle.trim().toLowerCase()
   const filtered = threads.filter((t) => (!n || t.name.toLowerCase().includes(n)) && (!state || t.state === state) && (!blockedOnly || t.state === 'BLOCKED'))
   // cpu= 가 없는 스레드(옛 모양)는 맨 뒤로
   const rows = sort === 'cpu' ? [...filtered].sort((a, b) => (b.cpuMs ?? -1) - (a.cpuMs ?? -1)) : filtered
-  const current = threads.find((t) => t.name === picked) ?? null
+  const current = threads.find((t) => t.id === picked) ?? null
 
   return (
     <>
@@ -323,7 +325,7 @@ function Threads({ dump }: { dump: ThreadDump }) {
               </TableHead>
               <TableBody>
                 {rows.map((t) => (
-                  <TableRow key={t.name} onClick={() => setPicked(t.name)} selected={t.name === picked} aria-label={`${t.name} 스택 보기`}>
+                  <TableRow key={t.id} onClick={() => setPicked(t.id)} selected={t.id === picked} aria-label={`${t.name} 스택 보기`}>
                     <TableCell type="mono">{t.name}</TableCell>
                     <TableCell type="badge">
                       <Badge tone={threadTone(t.state)}>{t.state}</Badge>
