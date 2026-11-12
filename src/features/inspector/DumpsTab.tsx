@@ -298,7 +298,7 @@ function Threads({ dump }: { dump: ThreadDump }) {
             정렬
           </label>
           <Select id="in-thread-sort" value={sort} onChange={(e) => setSort(e.target.value as 'trouble' | 'dump' | 'cpu')}>
-            <option value="trouble">문제 순 (데드락 · 락 · BLOCKED 먼저)</option>
+            <option value="trouble" title="데드락 · 락을 쥔 쪽 · BLOCKED 가 먼저">문제 순</option>
             <option value="dump">덤프 순서</option>
             <option value="cpu" disabled={!hasCpu} title={hasCpu ? undefined : '이 덤프에는 cpu= 가 없습니다'}>
               CPU 시간 많은 순
