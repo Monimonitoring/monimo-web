@@ -1,0 +1,241 @@
+/* 「MONIMO 가 멈추면」 그림. 색은 의미 색만, 고정 치수는 「랜딩 전용」 */
+.wd {
+  --wd-line: color-mix(in srgb, var(--color-text-on-dark) 12%, transparent);
+  --wd-fill: color-mix(in srgb, var(--color-text-on-dark) 5%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: 16px; /* 랜딩 전용 */
+  background:
+    radial-gradient(60% 80% at 100% 0%, color-mix(in srgb, var(--color-accent-default) 22%, transparent), transparent 70%),
+    var(--mon-bg);
+  color: var(--color-text-on-dark-muted);
+  box-shadow: var(--shadow-overlay);
+  transition: background 0.6s;
+}
+.wd--down {
+  background:
+    radial-gradient(60% 80% at 100% 0%, color-mix(in srgb, var(--color-status-crit) 26%, transparent), transparent 70%),
+    var(--mon-bg);
+}
+
+/* 장면 고르기 */
+.wd__switch { display: flex; align-items: center; gap: var(--space-2); }
+.wd__switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--size-control);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--wd-line);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-on-dark-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.wd__switch button[aria-selected='true'] { background: var(--color-text-on-dark); color: var(--color-text-primary); }
+.wd__switch-dot { width: 8px; height: 8px; border-radius: var(--radius-full); }
+.wd__switch-dot--ok { background: var(--color-status-ok-on-dark); }
+.wd__switch-dot--crit { background: var(--color-status-crit); }
+.wd__auto { margin-left: auto; color: var(--color-text-on-dark-caption); }
+
+/* 무대 : 바깥 · 클러스터 · 결과 */
+.wd__stage {
+  display: grid;
+  grid-template-columns: 200px 1fr 240px; /* 랜딩 전용 */
+  gap: var(--space-4);
+  align-items: stretch;
+}
+.wd__tag {
+  align-self: flex-start;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--wd-fill);
+  color: var(--color-text-on-dark-caption);
+}
+
+.wd__outside {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-accent-on-dark) 45%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent-default) 12%, transparent);
+}
+.wd__outside--asking::after {
+  /* Watchdog 이 클러스터에 묻는 순간 오른쪽으로 신호가 나간다 */
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -16px; /* 랜딩 전용 : gap 만큼 */
+  width: 16px;
+  height: 2px;
+  background: var(--color-accent-on-dark);
+  animation: wd-blink 0.8s infinite;
+}
+.wd__lambda { display: flex; align-items: center; gap: var(--space-3); color: var(--color-text-on-dark); }
+.wd__lambda div { display: flex; flex-direction: column; }
+.wd__lambda span.text-caption-12 { color: var(--color-text-on-dark-caption); }
+.wd__lambda-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; /* 랜딩 전용 */
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-default);
+  font: 700 20px/1 var(--font-mono); /* 랜딩 전용 */
+  color: var(--color-text-on-dark);
+  animation: wd-tick 1s ease-in-out infinite;
+}
+.wd__timer { display: flex; flex-direction: column; gap: var(--space-1); margin-top: auto; }
+.wd__timer-label { color: var(--color-text-on-dark-caption); }
+.wd__timer b { font: 600 20px/1.2 var(--font-mono); color: var(--color-text-on-dark); } /* 랜딩 전용 */
+.wd--down .wd__timer b { color: var(--mon-crit-light); }
+.wd__timer-bar { height: 4px; border-radius: var(--radius-full); background: var(--wd-fill); overflow: hidden; }
+.wd__timer-bar span { display: block; height: 100%; background: var(--color-status-crit); transition: width 0.9s linear; }
+
+.wd__cluster {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px dashed var(--wd-line);
+  border-radius: var(--radius-md);
+  background: var(--wd-fill);
+}
+.wd__nodes {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wd__node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-3) var(--space-1);
+  border: 1px solid var(--wd-line);
+  border-radius: var(--radius-sm);
+  background: var(--mon-bg);
+  color: var(--color-text-on-dark);
+  text-align: center;
+  transition: border-color 0.3s, background 0.3s, transform 0.3s, opacity 0.3s;
+}
+.wd__node span { color: var(--color-text-on-dark-caption); }
+.wd__node--lit { border-color: var(--color-status-ok-on-dark); transform: translateY(-2px); }
+.wd__node--asked { border-color: var(--color-accent-on-dark); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent-on-dark) 25%, transparent); }
+.wd__node--down {
+  border-color: var(--color-status-crit);
+  background: color-mix(in srgb, var(--color-status-crit) 22%, var(--mon-bg));
+  animation: wd-shake 0.5s 1;
+}
+.wd__node--down span { color: var(--mon-crit-light); font-weight: 600; }
+.wd--down .wd__node--down ~ .wd__node { opacity: 0.35; }
+
+.wd__track { position: relative; height: 4px; margin: 0 8%; border-radius: var(--radius-full); background: var(--wd-line); }
+.wd__canary {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: var(--radius-full);
+  background: var(--mon-warn-light);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--mon-warn-light) 30%, transparent), 0 0 18px var(--mon-warn-light);
+  animation: wd-run 2.6s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+.wd__canary--stuck { animation: wd-stuck 1.6s cubic-bezier(0.45, 0, 0.2, 1) forwards, wd-fade 1.2s 2.2s forwards; }
+
+.wd__inside-alert { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-on-dark-caption); }
+.wd--down .wd__inside-alert { color: var(--mon-crit-light); }
+.wd__mute { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-status-ok-on-dark); }
+.wd--down .wd__mute { background: var(--color-text-on-dark-caption); }
+
+.wd__result { display: flex; align-items: center; }
+.wd__wait { display: flex; align-items: center; gap: var(--space-2); width: 100%; justify-content: center; color: var(--color-text-on-dark-caption); }
+.wd__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--wd-line);
+  border-top-color: var(--color-accent-on-dark);
+  border-radius: var(--radius-full);
+  animation: wd-spin 0.8s linear infinite;
+}
+.wd__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  animation: wd-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+.wd__card b { color: var(--color-text-primary); }
+.wd__card--ok { border-top: 4px solid var(--color-status-ok); }
+.wd__card--crit { border-left: 4px solid var(--color-status-crit); box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-status-crit) 25%, transparent); }
+.wd__big { font: 700 28px/1 var(--font-sans); color: var(--color-status-ok); } /* 랜딩 전용 */
+.wd__slack-head { color: var(--color-text-tertiary); }
+.wd__checks { display: grid; grid-template-columns: 1fr 1fr; gap: 2px var(--space-2); margin: var(--space-2) 0 0; padding: 0; list-style: none; color: var(--color-status-ok-text); }
+
+/* 아래 설명 세 줄 */
+.wd__script { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.wd__line {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--wd-line);
+  border-radius: var(--radius-md);
+  opacity: 0.45;
+  transition: opacity 0.3s, background 0.3s, border-color 0.3s;
+}
+.wd__line--done { opacity: 0.75; }
+.wd__line--on { opacity: 1; border-color: var(--color-accent-on-dark); background: color-mix(in srgb, var(--color-accent-default) 18%, transparent); color: var(--color-text-on-dark); }
+.wd--down .wd__line--on { border-color: var(--color-status-crit); background: color-mix(in srgb, var(--color-status-crit) 16%, transparent); }
+.wd__num {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px; /* 랜딩 전용 */
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--wd-fill);
+  color: var(--color-text-on-dark);
+}
+
+@keyframes wd-run { from { left: 0; } to { left: 100%; } }
+@keyframes wd-stuck { from { left: 0; } to { left: 50%; background: var(--color-status-crit); } }
+@keyframes wd-fade { to { opacity: 0.15; } }
+@keyframes wd-blink { 50% { opacity: 0.2; } }
+@keyframes wd-tick { 50% { transform: scale(1.06); } }
+@keyframes wd-spin { to { transform: rotate(360deg); } }
+@keyframes wd-pop { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes wd-shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .wd, .wd * { animation: none !important; transition: none !important; }
+  .wd__canary { left: 100%; }
+}
+
+@media (max-width: 1080px) {
+  .wd__stage { grid-template-columns: 1fr; }
+  .wd__outside--asking::after { display: none; }
+  .wd__script { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .wd__nodes { grid-template-columns: repeat(3, 1fr); }
+  .wd__track { display: none; }
+  .wd__auto { display: none; }
+}

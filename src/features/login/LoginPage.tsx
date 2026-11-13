@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ApiError } from '@/api'
 import { safeNextPath, useAuth } from '@/auth'
 import { Banner, Button, Field, IconArrowRight, Input } from '@/design-system'
@@ -68,6 +68,7 @@ export function LoginPage() {
         <div className="login__brand">
           <div className="login__wordmark">MONIMO</div>
           <p className="login__tagline">쿠버네티스 위 MSA를 비침습 수집하고, 그 감시 체계까지 스스로 감시하는 Pinpoint형 APM</p>
+          <Link to="/intro" className="login__intro-link text-body-13-strong">서비스 소개 보기 <IconArrowRight size={12} /></Link>
         </div>
         <div className="login__pipeline-block">
           <div className="login__micro text-micro-11">수집 파이프라인</div>

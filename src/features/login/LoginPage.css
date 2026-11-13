@@ -22,6 +22,15 @@
   letter-spacing: 0.04em;
   color: var(--color-text-on-dark);
 }
+.login__intro-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  color: var(--color-accent-on-dark);
+  text-decoration: none;
+}
+.login__intro-link:hover { color: var(--color-text-on-dark); }
 .login__tagline {
   max-width: 560px; /* 시안 값 */
   margin: 0;
