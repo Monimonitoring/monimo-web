@@ -22,6 +22,8 @@ export const routes: RouteObject[] = [
       { path: '*', handle: { title: '페이지 없음' } satisfies ScreenMeta, element: <NotFound /> },
     ],
   },
+  // 소개 페이지. 로그인 없이 보는 공개 화면 (발표 · 공유용 주소)
+  { path: '/intro', errorElement: <RouteError />, lazy: () => import('@/features/landing').then((m) => ({ Component: m.LandingPage })) },
   // S00 로그인. 셸 없이 단독 화면
   { path: '/login', errorElement: <RouteError />, lazy: () => import('@/features/login').then((m) => ({ Component: m.LoginPage })) },
   // 디자인 시스템 미리보기. 사이드바에는 없고 주소로만 들어간다
