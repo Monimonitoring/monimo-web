@@ -33,8 +33,9 @@ export function LinkedLogs({ traceId, root }: Props) {
   const headingId = useId()
   const code = error instanceof ApiError ? error.code : ''
 
-  // 로그 화면을 같은 조건(trace_id · 이 기간)으로. 로그는 대부분 루트 서비스가 남기므로 그 서비스로 연다
-  const logsLink = href('/logs', { serviceName: root.service_name, range: { kind: 'custom', from, to } }, { trace_id: traceId })
+  // 로그 화면을 같은 조건(trace_id · 이 기간)으로. 서비스마다 로그를 남기므로 서비스는 전체로 열어 위 표와 같은 줄이 나오게.
+  // service 키가 없으면 지금 고른 서비스가 유지되므로(parseFilters) 빈 service= 로 전체를 적는다
+  const logsLink = `${href('/logs', { serviceName: null, range: { kind: 'custom', from, to } }, { trace_id: traceId })}&service=`
 
   return (
     <section className="td-card td-logs" aria-labelledby={headingId}>
